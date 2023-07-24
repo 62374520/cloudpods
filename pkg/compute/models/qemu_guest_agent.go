@@ -88,6 +88,19 @@ func (self *SGuest) PerformQgaPing(
 	return res, nil
 }
 
+func (self *SGuest) PerformQgaGuestInfoTask(
+	ctx context.Context,
+	userCred mcclient.TokenCredential,
+	query jsonutils.JSONObject,
+	input *api.ServerQgaTimeoutInput,
+) (jsonutils.JSONObject, error) {
+	if self.PowerStates != api.VM_POWER_STATES_ON {
+		return nil, httperrors.NewBadRequestError("can't use qga in vm status: %s", self.Status)
+	}
+	host, _ := self.GetHost()
+	return nil, self.GetDriver().QgaRequestGuestInfoTask(ctx, userCred, host, self, nil)
+}
+
 func (self *SGuest) PerformQgaCommand(
 	ctx context.Context,
 	userCred mcclient.TokenCredential,

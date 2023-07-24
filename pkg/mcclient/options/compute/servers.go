@@ -855,6 +855,14 @@ func (o *ServerQgaPing) Params() (jsonutils.JSONObject, error) {
 	return options.StructToParams(o)
 }
 
+type ServerQgaGuestInfoTask struct {
+	ServerIdOptions
+}
+
+func (o *ServerQgaGuestInfoTask) Params() (jsonutils.JSONObject, error) {
+	return options.StructToParams(o)
+}
+
 type ServerSetPasswordOptions struct {
 	ServerIdOptions
 

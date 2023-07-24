@@ -1058,6 +1058,17 @@ func (self *SKVMGuestDriver) QgaRequestGuestPing(ctx context.Context, header htt
 	return nil
 }
 
+func (self *SKVMGuestDriver) QgaRequestGuestInfoTask(ctx context.Context, userCred mcclient.TokenCredential, host *models.SHost, guest *models.SGuest, input *api.ServerQgaGuestInfoTaskInput) error {
+	url := fmt.Sprintf("%s/servers/%s/qga-guest-info-task", host.ManagerUri, guest.Id)
+	httpClient := httputils.GetDefaultClient()
+	header := mcclient.GetTokenHeaders(userCred)
+	_, _, err := httputils.JSONRequest(httpClient, ctx, "POST", url, header, nil, false)
+	if err != nil {
+		return errors.Wrap(err, "host request")
+	}
+	return nil
+}
+
 func (self *SKVMGuestDriver) QgaRequestSetUserPassword(ctx context.Context, task taskman.ITask, host *models.SHost, guest *models.SGuest, input *api.ServerQgaSetPasswordInput) error {
 	url := fmt.Sprintf("%s/servers/%s/qga-set-password", host.ManagerUri, guest.Id)
 	httpClient := httputils.GetDefaultClient()

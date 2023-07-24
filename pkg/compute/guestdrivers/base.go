@@ -500,6 +500,10 @@ func (self *SBaseGuestDriver) QgaRequestGuestPing(ctx context.Context, header ht
 	return httperrors.ErrNotImplemented
 }
 
+func (self *SBaseGuestDriver) QgaRequestGuestInfoTask(ctx context.Context, task taskman.ITask, host *models.SHost, guest *models.SGuest, input *api.ServerQgaGuestInfoTaskInput) error {
+	return httperrors.ErrNotImplemented
+}
+
 func (self *SBaseGuestDriver) QgaRequestSetUserPassword(ctx context.Context, task taskman.ITask, host *models.SHost, guest *models.SGuest, input *api.ServerQgaSetPasswordInput) error {
 	return httperrors.ErrNotImplemented
 }

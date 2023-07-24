@@ -284,6 +284,14 @@ func (qga *QemuGuestAgent) GuestSetUserPassword(username, password string, crypt
 	return nil
 }
 
+func (qga *QemuGuestAgent) GuestInfoTask() error {
+	cmd := &monitor.Command{
+		Execute: "guest-info",
+	}
+	_, err := qga.execCmd(cmd, true, -1)
+	return err
+}
+
 /*
 ##
 # @GuestExec:
