@@ -116,3 +116,19 @@ func (self *SGuest) PerformQgaCommand(
 	host, _ := self.GetHost()
 	return self.GetDriver().RequestQgaCommand(ctx, userCred, jsonutils.Marshal(input), host, self)
 }
+
+func (self *SGuest) PerformQgaCommandTest(
+	ctx context.Context,
+	userCred mcclient.TokenCredential,
+	query jsonutils.JSONObject,
+	input *api.ServerQgaCommandTestInput,
+) (jsonutils.JSONObject, error) {
+	if self.PowerStates != api.VM_POWER_STATES_ON {
+		return nil, httperrors.NewBadRequestError("can't use qga in vm status: %s", self.Status)
+	}
+	if input.Command == "" {
+		return nil, httperrors.NewMissingParameterError("command")
+	}
+	host, _ := self.GetHost()
+	return self.GetDriver().RequestQgaCommandTest(ctx, userCred, jsonutils.Marshal(input), host, self)
+}

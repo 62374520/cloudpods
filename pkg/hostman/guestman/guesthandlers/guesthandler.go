@@ -98,6 +98,7 @@ func AddGuestTaskHandler(prefix string, app *appsrv.Application) {
 			"qga-guest-ping":           qgaGuestPing,
 			"qga-command":              qgaCommand,
 			"qga-guest-info-task":      qgaGuestInfoTask,
+			"qga-command-test":         qgaCommandTest,
 		} {
 			app.AddHandler("POST",
 				fmt.Sprintf("%s/%s/<sid>/%s", prefix, keyWord, action),
@@ -860,4 +861,24 @@ func qgaCommand(ctx context.Context, userCred mcclient.TokenCredential, sid stri
 	}
 
 	return gm.QgaCommand(qgaCmd, sid, input.Timeout)
+}
+
+func qgaCommandTest(ctx context.Context, userCred mcclient.TokenCredential, sid string, body jsonutils.JSONObject) (interface{}, error) {
+	gm := guestman.GetGuestManager()
+	input := computeapi.ServerQgaCommandTestInput{}
+	err := body.Unmarshal(&input)
+	if err != nil {
+		return nil, httperrors.NewInputParameterError("unmarshal input to ServerQgaCommandInput: %s", err.Error())
+	}
+	cmdJson, err := jsonutils.ParseString(input.Command)
+	if err != nil {
+		return nil, httperrors.NewInputParameterError("failed parse qga command")
+	}
+	qgaCmd := &monitor.Command{}
+	err = cmdJson.Unmarshal(qgaCmd)
+	if err != nil {
+		return nil, httperrors.NewInputParameterError("failed unmarshal qga command")
+	}
+
+	return gm.QgaCommandTest(qgaCmd, sid, input.Timeout)
 }

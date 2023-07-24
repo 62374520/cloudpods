@@ -255,7 +255,7 @@ type ServerConfigs struct {
 	AutoSwitchToBackupOnHostDown bool   `help:"Auto switch to backup server on host down"`
 
 	Schedtag []string `help:"Schedule policy, key = aggregate name, value = require|exclude|prefer|avoid" metavar:"<KEY:VALUE>"`
-	Disk     []string `help:"
+	Disk []string `help:"
 	Disk descriptions
 	size: 500M, 10G
 	fs: swap, ext2, ext3, ext4, xfs, ntfs, fat, hfsplus
@@ -843,6 +843,13 @@ type ServerQgaCommand struct {
 
 func (o *ServerQgaCommand) Params() (jsonutils.JSONObject, error) {
 	return options.StructToParams(o)
+}
+
+type ServerQgaCommandTest struct {
+	ServerIdOptions
+
+	COMMAND string `help:"qga command test"`
+	Timeout int    `help:"qga command execute timeout (ms)"`
 }
 
 type ServerQgaPing struct {

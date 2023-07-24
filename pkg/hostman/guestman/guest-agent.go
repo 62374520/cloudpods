@@ -121,3 +121,27 @@ func (m *SGuestManager) QgaCommand(cmd *monitor.Command, sid string, execTimeout
 
 	return string(res), err
 }
+
+func (m *SGuestManager) QgaCommandTest(cmd *monitor.Command, sid string, execTimeout int) (string, error) {
+	guest, err := m.checkAndInitGuestQga(sid)
+	if err != nil {
+		return "", err
+	}
+	var res []byte
+	if guest.guestAgent.TryLock() {
+		defer guest.guestAgent.Unlock()
+
+		if execTimeout > 0 {
+			guest.guestAgent.SetTimeout(execTimeout)
+			defer guest.guestAgent.ResetTimeout()
+		}
+		res, err = guest.guestAgent.QgaCommandTest(cmd)
+		if err != nil {
+			err = errors.Wrapf(err, "exec qga command %s", cmd.Execute)
+		}
+	} else {
+		err = errors.Errorf("qga unfinished last cmd, is qga unavailable?")
+	}
+
+	return string(res), err
+}

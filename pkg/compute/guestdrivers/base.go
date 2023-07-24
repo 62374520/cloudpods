@@ -512,6 +512,10 @@ func (self *SBaseGuestDriver) RequestQgaCommand(ctx context.Context, userCred mc
 	return nil, httperrors.ErrNotImplemented
 }
 
+func (self *SBaseGuestDriver) RequestQgaCommandTest(ctx context.Context, userCred mcclient.TokenCredential, body jsonutils.JSONObject, host *models.SHost, guest *models.SGuest) (jsonutils.JSONObject, error) {
+	return nil, httperrors.ErrNotImplemented
+}
+
 func (self *SBaseGuestDriver) FetchMonitorUrl(ctx context.Context, guest *models.SGuest) string {
 	s := auth.GetAdminSessionWithPublic(ctx, consts.GetRegion())
 	influxdbUrl, err := s.GetServiceURL(apis.SERVICE_TYPE_INFLUXDB, options.Options.MonitorEndpointType)

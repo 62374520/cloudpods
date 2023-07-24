@@ -993,6 +993,11 @@ type ServerQgaCommandInput struct {
 	Command string
 }
 
+type ServerQgaCommandTestInput struct {
+	ServerQgaTimeoutInput
+	Command string
+}
+
 type ServerSetPasswordInput struct {
 	Username string
 	Password string

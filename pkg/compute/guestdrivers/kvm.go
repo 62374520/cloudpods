@@ -1092,6 +1092,17 @@ func (self *SKVMGuestDriver) RequestQgaCommand(ctx context.Context, userCred mcc
 	return res, nil
 }
 
+func (self *SKVMGuestDriver) RequestQgaCommandTest(ctx context.Context, userCred mcclient.TokenCredential, body jsonutils.JSONObject, host *models.SHost, guest *models.SGuest) (jsonutils.JSONObject, error) {
+	url := fmt.Sprintf("%s/servers/%s/qga-command-test", host.ManagerUri, guest.Id)
+	httpClient := httputils.GetDefaultClient()
+	header := mcclient.GetTokenHeaders(userCred)
+	_, res, err := httputils.JSONRequest(httpClient, ctx, "POST", url, header, body, false)
+	if err != nil {
+		return nil, errors.Wrap(err, "host request")
+	}
+	return res, nil
+}
+
 func (self *SKVMGuestDriver) FetchMonitorUrl(ctx context.Context, guest *models.SGuest) string {
 	if options.Options.KvmMonitorAgentUseMetadataService && !guest.IsSriov() {
 		return apis.MetaServiceMonitorAgentUrl

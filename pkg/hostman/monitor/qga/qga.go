@@ -146,6 +146,30 @@ func (qga *QemuGuestAgent) QgaCommand(cmd *monitor.Command) ([]byte, error) {
 	return *res, nil
 }
 
+func (qga *QemuGuestAgent) QgaCommandTest(cmd *monitor.Command) ([]byte, error) {
+	info, err := qga.GuestInfo()
+	if err != nil {
+		return nil, err
+	}
+	var i = 0
+	for ; i < len(info.SupportedCommands); i++ {
+		if info.SupportedCommands[i].Name == cmd.Execute {
+			break
+		}
+	}
+	if i > len(info.SupportedCommands) {
+		return nil, errors.Errorf("unsupported command %s", cmd.Execute)
+	}
+	if !info.SupportedCommands[i].Enabled {
+		return nil, errors.Errorf("command %s not enabled", cmd.Execute)
+	}
+	res, err := qga.execCmd(cmd, info.SupportedCommands[i].SuccessResp, -1)
+	if err != nil {
+		return nil, err
+	}
+	return *res, nil
+}
+
 func (qga *QemuGuestAgent) execCmd(cmd *monitor.Command, expectResp bool, readTimeout int) (*json.RawMessage, error) {
 	if qga.TryLock() {
 		qga.Unlock()
