@@ -1058,7 +1058,7 @@ func (self *SKVMGuestDriver) QgaRequestGuestPing(ctx context.Context, header htt
 	return nil
 }
 
-func (self *SKVMGuestDriver) QgaRequestGuestInfoTask(ctx context.Context, userCred mcclient.TokenCredential, host *models.SHost, guest *models.SGuest, input *api.ServerQgaGuestInfoTaskInput) (jsonutils.JSONObject, error) {
+func (self *SKVMGuestDriver) QgaRequestGuestInfoTask(ctx context.Context, userCred mcclient.TokenCredential, body jsonutils.JSONObject, host *models.SHost, guest *models.SGuest) (jsonutils.JSONObject, error) {
 	url := fmt.Sprintf("%s/servers/%s/qga-guest-info-task", host.ManagerUri, guest.Id)
 	httpClient := httputils.GetDefaultClient()
 	header := mcclient.GetTokenHeaders(userCred)
