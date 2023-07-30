@@ -80,9 +80,8 @@ func (m *SGuestManager) QgaGuestPing(ctx context.Context, params interface{}) (j
 	return nil, errors.Errorf("qga unfinished last cmd, is qga unavailable?")
 }
 
-func (m *SGuestManager) QgaGuestInfoTask(ctx context.Context, params interface{}) (string, error) {
-	input := params.(*SBaseParams)
-	guest, err := m.checkAndInitGuestQga(input.Sid)
+func (m *SGuestManager) QgaGuestInfoTask(sid string) (string, error) {
+	guest, err := m.checkAndInitGuestQga(sid)
 	if err != nil {
 		return "", err
 	}

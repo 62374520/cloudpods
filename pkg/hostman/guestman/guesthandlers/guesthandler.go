@@ -839,8 +839,7 @@ func qgaGuestPing(ctx context.Context, userCred mcclient.TokenCredential, sid st
 
 func qgaGuestInfoTask(ctx context.Context, userCred mcclient.TokenCredential, sid string, body jsonutils.JSONObject) (interface{}, error) {
 	gm := guestman.GetGuestManager()
-	params := &guestman.SBaseParams{Sid: sid}
-	return gm.QgaGuestInfoTask(ctx, params)
+	return gm.QgaGuestInfoTask(sid)
 }
 
 func qgaCommand(ctx context.Context, userCred mcclient.TokenCredential, sid string, body jsonutils.JSONObject) (interface{}, error) {
