@@ -16,6 +16,9 @@ package guestman
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"os"
 	"yunion.io/x/jsonutils"
 	"yunion.io/x/pkg/errors"
 
@@ -92,9 +95,22 @@ func (m *SGuestManager) QgaGuestInfoTask(sid string) (string, error) {
 		if err != nil {
 			return "", errors.Wrap(err, "qga guest info task")
 		}
-		return "", nil
+		// 打开或创建文件
+		file, err := os.Create("/tmp/guestinfoGuestAgent.txt")
+		if err != nil {
+			fmt.Println("无法打开或创建文件：", err)
+		}
+		defer file.Close() // 保证在程序结束时关闭文件
+
+		var data []byte
+		data, err = json.Marshal(res)
+		_, err = file.Write(data)
+		if err != nil {
+			fmt.Println("写入文件失败：", err)
+		}
+		return string(res), nil
 	}
-	return string(res), errors.Errorf("qga unfinished last cmd, is qga unavailable?")
+	return "", errors.Errorf("qga unfinished last cmd, is qga unavailable?")
 }
 
 func (m *SGuestManager) QgaCommand(cmd *monitor.Command, sid string, execTimeout int) (string, error) {
@@ -113,6 +129,19 @@ func (m *SGuestManager) QgaCommand(cmd *monitor.Command, sid string, execTimeout
 		res, err = guest.guestAgent.QgaCommand(cmd)
 		if err != nil {
 			err = errors.Wrapf(err, "exec qga command %s", cmd.Execute)
+		}
+		// 打开或创建文件
+		file, err := os.Create("/tmp/commandGuestAgent.txt")
+		if err != nil {
+			fmt.Println("无法打开或创建文件：", err)
+		}
+		defer file.Close() // 保证在程序结束时关闭文件
+
+		var data []byte
+		data, err = json.Marshal(res)
+		_, err = file.Write(data)
+		if err != nil {
+			fmt.Println("写入文件失败：", err)
 		}
 	} else {
 		err = errors.Errorf("qga unfinished last cmd, is qga unavailable?")
