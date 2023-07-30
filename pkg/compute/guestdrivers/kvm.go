@@ -1063,6 +1063,7 @@ func (self *SKVMGuestDriver) QgaRequestGuestInfoTask(ctx context.Context, userCr
 	httpClient := httputils.GetDefaultClient()
 	header := mcclient.GetTokenHeaders(userCred)
 	_, res, err := httputils.JSONRequest(httpClient, ctx, "POST", url, header, nil, false)
+	fmt.Println("guest-guest-info-qga: ", res)
 	if err != nil {
 		return nil, errors.Wrap(err, "host request")
 	}
@@ -1090,6 +1091,7 @@ func (self *SKVMGuestDriver) RequestQgaCommand(ctx context.Context, userCred mcc
 	header := mcclient.GetTokenHeaders(userCred)
 	//设置了content-length和content-type,User-agent,accept,accept-encoding,Debug的调试信息,最后返回json格式的响应
 	_, res, err := httputils.JSONRequest(httpClient, ctx, "POST", url, header, body, false)
+	fmt.Println("guest-command-qga: ", res)
 	if err != nil {
 		return nil, errors.Wrap(err, "host request")
 	}
