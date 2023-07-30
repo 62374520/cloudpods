@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"os"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -147,7 +148,20 @@ func (qga *QemuGuestAgent) GuestInfoTask() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("guest-info-test-qga: ", string(*res))
+	// 打开或创建文件
+	file, err := os.Create("/tmp/log.txt")
+	if err != nil {
+		fmt.Println("无法打开或创建文件：", err)
+	}
+	defer file.Close() // 保证在程序结束时关闭文件
+
+	var data []byte
+	data, err = json.Marshal(*res)
+	_, err = file.Write(data)
+	if err != nil {
+		fmt.Println("写入文件失败：", err)
+	}
+
 	return *res, nil
 
 	//cmd := &monitor.Command{
