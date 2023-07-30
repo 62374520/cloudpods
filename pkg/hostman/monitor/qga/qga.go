@@ -147,7 +147,7 @@ func (qga *QemuGuestAgent) GuestInfoTask() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("guest-info-test: %s\n", string(*res))
+	fmt.Println("guest-info-test-qga: ", string(*res))
 	return *res, nil
 
 	//cmd := &monitor.Command{
@@ -182,7 +182,7 @@ func (qga *QemuGuestAgent) QgaCommand(cmd *monitor.Command) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("guest-command: %s\n", string(*res))
+	fmt.Println("guest-command-qga: ", string(*res))
 	return *res, nil
 }
 

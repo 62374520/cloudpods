@@ -16,6 +16,7 @@ package guestman
 
 import (
 	"context"
+	"fmt"
 	"yunion.io/x/jsonutils"
 	"yunion.io/x/pkg/errors"
 
@@ -89,6 +90,7 @@ func (m *SGuestManager) QgaGuestInfoTask(sid string) (string, error) {
 	if guest.guestAgent.TryLock() {
 		defer guest.guestAgent.Unlock()
 		res, err = guest.guestAgent.GuestInfoTask()
+		fmt.Println("guest-info-test:", string(res))
 		if err != nil {
 			return "", errors.Wrap(err, "qga guest info task")
 		}
@@ -111,6 +113,7 @@ func (m *SGuestManager) QgaCommand(cmd *monitor.Command, sid string, execTimeout
 			defer guest.guestAgent.ResetTimeout()
 		}
 		res, err = guest.guestAgent.QgaCommand(cmd)
+		fmt.Println("guest-command:", string(res))
 		if err != nil {
 			err = errors.Wrapf(err, "exec qga command %s", cmd.Execute)
 		}
