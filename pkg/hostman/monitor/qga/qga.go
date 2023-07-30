@@ -18,7 +18,9 @@ import (
 	"bufio"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net"
+	"os"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -146,6 +148,7 @@ func (qga *QemuGuestAgent) GuestInfoTask() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Fprintf(os.Stderr, "guest-info-test: %s\n", string(*res))
 	return *res, nil
 
 	//cmd := &monitor.Command{
@@ -180,6 +183,7 @@ func (qga *QemuGuestAgent) QgaCommand(cmd *monitor.Command) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Fprintf(os.Stderr, "guest-command: %s\n", string(*res))
 	return *res, nil
 }
 
