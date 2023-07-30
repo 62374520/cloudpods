@@ -983,6 +983,9 @@ type ServerQgaSetPasswordInput struct {
 type ServerQgaGuestInfoTaskInput struct {
 }
 
+type ServerQgaGetNetworkInput struct {
+}
+
 type ServerQgaTimeoutInput struct {
 	// qga execute timeout millisecond
 	Timeout int

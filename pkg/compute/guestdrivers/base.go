@@ -504,6 +504,10 @@ func (self *SBaseGuestDriver) QgaRequestGuestInfoTask(ctx context.Context, userC
 	return nil, httperrors.ErrNotImplemented
 }
 
+func (self *SBaseGuestDriver) QgaRequestGetNetwork(ctx context.Context, userCred mcclient.TokenCredential, body jsonutils.JSONObject, host *models.SHost, guest *models.SGuest) (jsonutils.JSONObject, error) {
+	return nil, httperrors.ErrNotImplemented
+}
+
 func (self *SBaseGuestDriver) QgaRequestSetUserPassword(ctx context.Context, task taskman.ITask, host *models.SHost, guest *models.SGuest, input *api.ServerQgaSetPasswordInput) error {
 	return httperrors.ErrNotImplemented
 }

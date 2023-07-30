@@ -99,6 +99,7 @@ func AddGuestTaskHandler(prefix string, app *appsrv.Application) {
 			"qga-command":              qgaCommand,
 			"qga-guest-info-task":      qgaGuestInfoTask,
 			"qga-command-test":         qgaCommandTest,
+			"qga-get-network":          qgaGetNetwork,
 		} {
 			app.AddHandler("POST",
 				fmt.Sprintf("%s/%s/<sid>/%s", prefix, keyWord, action),
@@ -840,6 +841,11 @@ func qgaGuestPing(ctx context.Context, userCred mcclient.TokenCredential, sid st
 func qgaGuestInfoTask(ctx context.Context, userCred mcclient.TokenCredential, sid string, body jsonutils.JSONObject) (interface{}, error) {
 	gm := guestman.GetGuestManager()
 	return gm.QgaGuestInfoTask(sid)
+}
+
+func qgaGetNetwork(ctx context.Context, userCred mcclient.TokenCredential, sid string, body jsonutils.JSONObject) (interface{}, error) {
+	gm := guestman.GetGuestManager()
+	return gm.QgaGetNetwork(sid)
 }
 
 func qgaCommand(ctx context.Context, userCred mcclient.TokenCredential, sid string, body jsonutils.JSONObject) (interface{}, error) {

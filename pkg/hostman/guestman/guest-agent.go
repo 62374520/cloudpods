@@ -110,6 +110,23 @@ func (m *SGuestManager) QgaGuestInfoTask(sid string) (string, error) {
 	return "", errors.Errorf("qga unfinished last cmd, is qga unavailable?")
 }
 
+func (m *SGuestManager) QgaGetNetwork(sid string) (string, error) {
+	guest, err := m.checkAndInitGuestQga(sid)
+	if err != nil {
+		return "", err
+	}
+	var res []byte
+	if guest.guestAgent.TryLock() {
+		defer guest.guestAgent.Unlock()
+		res, err = guest.guestAgent.QgaGetNetwork()
+		if err != nil {
+			return "", errors.Wrap(err, "qga guest info task")
+		}
+		return string(res), nil
+	}
+	return "", errors.Errorf("qga unfinished last cmd, is qga unavailable?")
+}
+
 func (m *SGuestManager) QgaCommand(cmd *monitor.Command, sid string, execTimeout int) (string, error) {
 	guest, err := m.checkAndInitGuestQga(sid)
 	if err != nil {

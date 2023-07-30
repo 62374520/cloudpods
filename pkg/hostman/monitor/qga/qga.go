@@ -173,6 +173,17 @@ func (qga *QemuGuestAgent) GuestInfoTask() ([]byte, error) {
 	//return *res, nil
 }
 
+func (qga *QemuGuestAgent) QgaGetNetwork() ([]byte, error) {
+	cmd := &monitor.Command{
+		Execute: "guest-network-get-interfaces",
+	}
+	res, err := qga.execCmd(cmd, true, -1)
+	if err != nil {
+		return nil, err
+	}
+	return *res, nil
+}
+
 func (qga *QemuGuestAgent) QgaCommand(cmd *monitor.Command) ([]byte, error) {
 	info, err := qga.GuestInfo()
 	if err != nil {
