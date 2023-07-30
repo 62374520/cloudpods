@@ -309,15 +309,40 @@ func (qga *QemuGuestAgent) GuestSetUserPassword(username, password string, crypt
 }
 
 func (qga *QemuGuestAgent) GuestInfoTask() ([]byte, error) {
+	info, err := qga.GuestInfo()
+	if err != nil {
+		return nil, err
+	}
 	cmd := &monitor.Command{
 		Execute: "guest-info",
 	}
-
+	var i = 0
+	for ; i < len(info.SupportedCommands); i++ {
+		if info.SupportedCommands[i].Name == cmd.Execute {
+			break
+		}
+	}
+	if i > len(info.SupportedCommands) {
+		return nil, errors.Errorf("unsupported command %s", cmd.Execute)
+	}
+	if !info.SupportedCommands[i].Enabled {
+		return nil, errors.Errorf("command %s not enabled", cmd.Execute)
+	}
 	res, err := qga.execCmd(cmd, true, -1)
 	if err != nil {
 		return nil, err
 	}
 	return *res, nil
+
+	//cmd := &monitor.Command{
+	//	Execute: "guest-info",
+	//}
+	//
+	//res, err := qga.execCmd(cmd, true, -1)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//return *res, nil
 }
 
 /*
