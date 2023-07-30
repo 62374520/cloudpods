@@ -1058,15 +1058,15 @@ func (self *SKVMGuestDriver) QgaRequestGuestPing(ctx context.Context, header htt
 	return nil
 }
 
-func (self *SKVMGuestDriver) QgaRequestGuestInfoTask(ctx context.Context, userCred mcclient.TokenCredential, host *models.SHost, guest *models.SGuest, input *api.ServerQgaGuestInfoTaskInput) error {
+func (self *SKVMGuestDriver) QgaRequestGuestInfoTask(ctx context.Context, userCred mcclient.TokenCredential, host *models.SHost, guest *models.SGuest, input *api.ServerQgaGuestInfoTaskInput) (jsonutils.JSONObject, error) {
 	url := fmt.Sprintf("%s/servers/%s/qga-guest-info-task", host.ManagerUri, guest.Id)
 	httpClient := httputils.GetDefaultClient()
 	header := mcclient.GetTokenHeaders(userCred)
-	_, _, err := httputils.JSONRequest(httpClient, ctx, "POST", url, header, nil, false)
+	_, res, err := httputils.JSONRequest(httpClient, ctx, "POST", url, header, nil, false)
 	if err != nil {
-		return errors.Wrap(err, "host request")
+		return nil, errors.Wrap(err, "host request")
 	}
-	return nil
+	return res, nil
 }
 
 func (self *SKVMGuestDriver) QgaRequestSetUserPassword(ctx context.Context, task taskman.ITask, host *models.SHost, guest *models.SGuest, input *api.ServerQgaSetPasswordInput) error {
@@ -1082,9 +1082,13 @@ func (self *SKVMGuestDriver) QgaRequestSetUserPassword(ctx context.Context, task
 }
 
 func (self *SKVMGuestDriver) RequestQgaCommand(ctx context.Context, userCred mcclient.TokenCredential, body jsonutils.JSONObject, host *models.SHost, guest *models.SGuest) (jsonutils.JSONObject, error) {
+	//设置请求的url地址
 	url := fmt.Sprintf("%s/servers/%s/qga-command", host.ManagerUri, guest.Id)
+	//获取默认的浏览器会话，设置超时时间、浏览器代理、是否加密等等
 	httpClient := httputils.GetDefaultClient()
+	//创建请求头，添加了用户的token
 	header := mcclient.GetTokenHeaders(userCred)
+	//设置了content-length和content-type,User-agent,accept,accept-encoding,Debug的调试信息,最后返回json格式的响应
 	_, res, err := httputils.JSONRequest(httpClient, ctx, "POST", url, header, body, false)
 	if err != nil {
 		return nil, errors.Wrap(err, "host request")

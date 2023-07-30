@@ -16,7 +16,6 @@ package guestman
 
 import (
 	"context"
-
 	"yunion.io/x/jsonutils"
 	"yunion.io/x/pkg/errors"
 
@@ -81,21 +80,22 @@ func (m *SGuestManager) QgaGuestPing(ctx context.Context, params interface{}) (j
 	return nil, errors.Errorf("qga unfinished last cmd, is qga unavailable?")
 }
 
-func (m *SGuestManager) QgaGuestInfoTask(ctx context.Context, params interface{}) (jsonutils.JSONObject, error) {
+func (m *SGuestManager) QgaGuestInfoTask(ctx context.Context, params interface{}) (string, error) {
 	input := params.(*SBaseParams)
 	guest, err := m.checkAndInitGuestQga(input.Sid)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
+	var res []byte
 	if guest.guestAgent.TryLock() {
 		defer guest.guestAgent.Unlock()
-		err = guest.guestAgent.GuestInfoTask()
+		res, err = guest.guestAgent.GuestInfoTask()
 		if err != nil {
-			return nil, errors.Wrap(err, "qga guest info task")
+			return "", errors.Wrap(err, "qga guest info task")
 		}
-		return nil, nil
+		return "", nil
 	}
-	return nil, errors.Errorf("qga unfinished last cmd, is qga unavailable?")
+	return string(res), errors.Errorf("qga unfinished last cmd, is qga unavailable?")
 }
 
 func (m *SGuestManager) QgaCommand(cmd *monitor.Command, sid string, execTimeout int) (string, error) {

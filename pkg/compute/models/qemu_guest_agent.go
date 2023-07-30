@@ -98,7 +98,7 @@ func (self *SGuest) PerformQgaGuestInfoTask(
 		return nil, httperrors.NewBadRequestError("can't use qga in vm status: %s", self.Status)
 	}
 	host, _ := self.GetHost()
-	return nil, self.GetDriver().QgaRequestGuestInfoTask(ctx, userCred, host, self, nil)
+	return self.GetDriver().QgaRequestGuestInfoTask(ctx, userCred, host, self, nil)
 }
 
 func (self *SGuest) PerformQgaCommand(
