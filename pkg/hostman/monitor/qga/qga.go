@@ -185,7 +185,7 @@ func (qga *QemuGuestAgent) QgaGetNetwork() ([]byte, error) {
 }
 
 func (qga *QemuGuestAgent) QgaGuestExecTest() ([]byte, error) {
-	arg := []string{"-c", "echo aaa > /tmp/cc.txt"}
+	arg := []string{"-c", "nmcli connection modify 'eth1' ipv4.method manual ipv4.address '192.168.200.222/24' ipv4.gateway '192.168.200.1'\n nmcli connection up 'eth1'"}
 	env := []string{}
 	cmd := &monitor.Command{
 		Execute: "guest-exec",
