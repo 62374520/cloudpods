@@ -110,15 +110,12 @@ func (self *SGuest) PerformQgaGuestExecTest(
 	if self.PowerStates != api.VM_POWER_STATES_ON {
 		return nil, httperrors.NewBadRequestError("can't use qga in vm status: %s", self.Status)
 	}
-	//if input.Network == "" {
-	//	return nil, httperrors.NewMissingParameterError("networkLink")
-	//}
-	//if input.Ip == "" {
-	//	return nil, httperrors.NewMissingParameterError("ipAddress")
-	//}
-	//if input.Gateway == "" {
-	//	return nil, httperrors.NewMissingParameterError("gateway")
-	//}
+	if input.Device == "" {
+		return nil, httperrors.NewMissingParameterError("device")
+	}
+	if input.Ip == "" {
+		return nil, httperrors.NewMissingParameterError("ipaddress")
+	}
 	host, _ := self.GetHost()
 	return self.GetDriver().QgaRequestGuestExecTest(ctx, userCred, jsonutils.Marshal(input), host, self)
 }

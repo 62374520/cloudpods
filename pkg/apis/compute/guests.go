@@ -985,9 +985,9 @@ type ServerQgaGuestInfoTaskInput struct {
 
 type ServerQgaGuestExecTestInput struct {
 	ServerQgaTimeoutInput
-	//Network string `json:"network"`
-	//Ip      string `json:"ip"`
-	//Gateway string `json:"gateway"`
+	Device  string
+	Ip      string
+	Gateway string
 }
 
 type ServerQgaGetNetworkInput struct {

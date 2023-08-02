@@ -18,6 +18,7 @@ import (
 	"bufio"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -184,8 +185,9 @@ func (qga *QemuGuestAgent) QgaGetNetwork() ([]byte, error) {
 	return *res, nil
 }
 
-func (qga *QemuGuestAgent) QgaGuestExecTest() ([]byte, error) {
-	arg := []string{"-c", "nmcli connection modify 'eth1' ipv4.method manual ipv4.address '192.168.200.222/24' ipv4.gateway '192.168.200.1'\n nmcli connection up 'eth1'"}
+func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([]byte, error) {
+	networkCmd := fmt.Sprintf("nmcli connection modify '%s' ipv4.method manual ipv4.address '%s' ipv4.gateway '%s'\n nmcli connection up '%s'", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Gateway, qgaNetMod.Device)
+	arg := []string{"-c", networkCmd}
 	env := []string{}
 	cmd := &monitor.Command{
 		Execute: "guest-exec",

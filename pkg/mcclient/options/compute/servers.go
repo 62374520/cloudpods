@@ -876,9 +876,10 @@ func (o *ServerQgaGuestInfoTask) Params() (jsonutils.JSONObject, error) {
 
 type ServerQgaGuestExecTest struct {
 	ServerIdOptions
-	//NetworkLink string `json:"network connection"`
-	//IpAddress   string `json:"ip and mask"`
-	//Gateway     string `json:"gateway"`
+
+	DEVICE  string `help:"network connection"`
+	IP      string `help:"ip/mask"`
+	Gateway string `help:"gateway"`
 }
 
 func (o *ServerQgaGuestExecTest) Params() (jsonutils.JSONObject, error) {

@@ -851,21 +851,18 @@ func qgaGetNetwork(ctx context.Context, userCred mcclient.TokenCredential, sid s
 
 func qgaGuestExecTest(ctx context.Context, userCred mcclient.TokenCredential, sid string, body jsonutils.JSONObject) (interface{}, error) {
 	gm := guestman.GetGuestManager()
-	//input := new(hostapi.GuestExecTestRequest)
-	//if err := body.Unmarshal(input); err != nil {
-	//	return nil, err
-	//}
-	//if input.Network == "" {
-	//	return nil, httperrors.NewMissingParameterError("networkLink")
-	//}
-	//if input.Ip == "" {
-	//	return nil, httperrors.NewMissingParameterError("ipaddress")
-	//}
-	//if input.Gateway == "" {
-	//	return nil, httperrors.NewMissingParameterError("gateway")
-	//}
-	params := &guestman.SQgaGuestExecTest{Sid: sid}
-	return gm.QgaGuestExecTest(ctx, params)
+	input := computeapi.ServerQgaGuestExecTestInput{}
+	err := body.Unmarshal(&input)
+	if err != nil {
+		return nil, httperrors.NewInputParameterError("unmarshal input to ServerQgaGuestExecTestInput: %s", err.Error())
+	}
+
+	qgaNetMod := &monitor.NetworkModify{
+		Device:  input.Device,
+		Ip:      input.Ip,
+		Gateway: input.Gateway,
+	}
+	return gm.QgaGuestExecTest(qgaNetMod, sid, input.Timeout)
 
 }
 
