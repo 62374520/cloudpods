@@ -186,7 +186,7 @@ func (qga *QemuGuestAgent) QgaGetNetwork() ([]byte, error) {
 
 func (qga *QemuGuestAgent) QgaGuestExecTest() ([]byte, error) {
 	arg := []string{"-c", "ls -l /"}
-	var env []string
+	env := []string{}
 	cmd := &monitor.Command{
 		Execute: "guest-exec",
 		Args: map[string]interface{}{
