@@ -184,7 +184,7 @@ func (qga *QemuGuestAgent) QgaGetNetwork() ([]byte, error) {
 	return *res, nil
 }
 
-func (qga *QemuGuestAgent) QgaGuestExecTest(networkLink, ipAddress, gateway string) ([]byte, error) {
+func (qga *QemuGuestAgent) QgaGuestExecTest() ([]byte, error) {
 	arg := []string{"-c", "ls -l /"}
 	cmd := &monitor.Command{
 		Execute: "guest-exec",

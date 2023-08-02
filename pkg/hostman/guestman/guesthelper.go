@@ -179,7 +179,7 @@ type SQgaGuestSetPassword struct {
 }
 
 type SQgaGuestExecTest struct {
-	*hostapi.GuestExecTestRequest
+	//*hostapi.GuestExecTestRequest
 	Sid string
 }
 

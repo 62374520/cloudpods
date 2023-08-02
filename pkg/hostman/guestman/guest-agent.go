@@ -120,7 +120,7 @@ func (m *SGuestManager) QgaGuestExecTest(ctx context.Context, params interface{}
 	var res []byte
 	if guest.guestAgent.TryLock() {
 		defer guest.guestAgent.Unlock()
-		res, err = guest.guestAgent.QgaGuestExecTest(input.NetworkLink, input.IpAddress, input.Gateway)
+		res, err = guest.guestAgent.QgaGuestExecTest()
 		if err != nil {
 			return "", errors.Wrap(err, "qga guest exec test")
 		}
