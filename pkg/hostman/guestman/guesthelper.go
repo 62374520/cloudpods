@@ -178,6 +178,11 @@ type SQgaGuestSetPassword struct {
 	Sid string
 }
 
+type SQgaGuestExecTest struct {
+	*hostapi.GuestExecTestRequest
+	Sid string
+}
+
 type CpuSetCounter struct {
 	Nodes []*NumaNode
 	Lock  sync.Mutex

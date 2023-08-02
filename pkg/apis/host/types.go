@@ -37,3 +37,9 @@ type GuestSetPasswordRequest struct {
 	Password string `json:"password"`
 	Crypted  bool   `json:"crypted"`
 }
+
+type GuestExecTestRequest struct {
+	NetworkLink string `json:"networkLink"`
+	IpAddress   string `json:"ipAddress"`
+	Gateway     string `json:"gateway"`
+}

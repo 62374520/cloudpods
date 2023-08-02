@@ -184,6 +184,25 @@ func (qga *QemuGuestAgent) QgaGetNetwork() ([]byte, error) {
 	return *res, nil
 }
 
+func (qga *QemuGuestAgent) QgaGuestExecTest(networkLink, ipAddress, gateway string) ([]byte, error) {
+	arg := []string{"-c", "ls -l /"}
+	cmd := &monitor.Command{
+		Execute: "guest-exec",
+		Args: map[string]interface{}{
+			"path":           "/bin/bash",
+			"arg":            arg,
+			"env":            "",
+			"input-data":     "",
+			"capture-output": true,
+		},
+	}
+	res, err := qga.execCmd(cmd, true, -1)
+	if err != nil {
+		return nil, err
+	}
+	return *res, nil
+}
+
 func (qga *QemuGuestAgent) QgaCommand(cmd *monitor.Command) ([]byte, error) {
 	info, err := qga.GuestInfo()
 	if err != nil {

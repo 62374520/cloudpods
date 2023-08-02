@@ -983,6 +983,13 @@ type ServerQgaSetPasswordInput struct {
 type ServerQgaGuestInfoTaskInput struct {
 }
 
+type ServerQgaGuestExecTestInput struct {
+	ServerQgaTimeoutInput
+	NetworkLink string `json:"network connection"`
+	IpAddress   string `json:"ip and mask"`
+	Gateway     string `json:"gateway"`
+}
+
 type ServerQgaGetNetworkInput struct {
 }
 

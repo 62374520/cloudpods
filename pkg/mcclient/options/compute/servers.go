@@ -874,6 +874,14 @@ func (o *ServerQgaGuestInfoTask) Params() (jsonutils.JSONObject, error) {
 	return options.StructToParams(o)
 }
 
+type ServerQgaGuestExecTest struct {
+	ServerIdOptions
+}
+
+func (o *ServerQgaGuestExecTest) Params() (jsonutils.JSONObject, error) {
+	return options.StructToParams(o)
+}
+
 type ServerQgaGetNetwork struct {
 	ServerIdOptions
 }

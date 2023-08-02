@@ -100,6 +100,7 @@ func AddGuestTaskHandler(prefix string, app *appsrv.Application) {
 			"qga-guest-info-task":      qgaGuestInfoTask,
 			"qga-command-test":         qgaCommandTest,
 			"qga-get-network":          qgaGetNetwork,
+			"qga-guest-exec-test":      qgaGuestExecTest,
 		} {
 			app.AddHandler("POST",
 				fmt.Sprintf("%s/%s/<sid>/%s", prefix, keyWord, action),
@@ -846,6 +847,26 @@ func qgaGuestInfoTask(ctx context.Context, userCred mcclient.TokenCredential, si
 func qgaGetNetwork(ctx context.Context, userCred mcclient.TokenCredential, sid string, body jsonutils.JSONObject) (interface{}, error) {
 	gm := guestman.GetGuestManager()
 	return gm.QgaGetNetwork(sid)
+}
+
+func qgaGuestExecTest(ctx context.Context, userCred mcclient.TokenCredential, sid string, body jsonutils.JSONObject) (interface{}, error) {
+	gm := guestman.GetGuestManager()
+	input := new(hostapi.GuestExecTestRequest)
+	if err := body.Unmarshal(input); err != nil {
+		return nil, err
+	}
+	if input.NetworkLink == "" {
+		return nil, httperrors.NewMissingParameterError("networkLink")
+	}
+	if input.IpAddress == "" {
+		return nil, httperrors.NewMissingParameterError("ipaddress")
+	}
+	if input.Gateway == "" {
+		return nil, httperrors.NewMissingParameterError("gateway")
+	}
+	params := &guestman.SQgaGuestExecTest{GuestExecTestRequest: input, Sid: sid}
+	return gm.QgaGuestExecTest(ctx, params)
+
 }
 
 func qgaCommand(ctx context.Context, userCred mcclient.TokenCredential, sid string, body jsonutils.JSONObject) (interface{}, error) {
