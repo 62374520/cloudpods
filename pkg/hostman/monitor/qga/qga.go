@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"os"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -187,6 +188,17 @@ func (qga *QemuGuestAgent) QgaGetNetwork() ([]byte, error) {
 
 func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([]byte, error) {
 	networkCmd := fmt.Sprintf("nmcli connection modify '%s' ipv4.method manual ipv4.address '%s' ipv4.gateway '%s'\n nmcli connection up '%s'", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Gateway, qgaNetMod.Device)
+	// 打开或创建文件
+	file, err := os.Create("/tmp/qgaExecTest.txt")
+	if err != nil {
+		fmt.Println("无法打开或创建文件：", err)
+	}
+	defer file.Close() // 保证在程序结束时关闭文件
+
+	_, err = file.Write([]byte(networkCmd))
+	if err != nil {
+		fmt.Println("写入文件失败：", err)
+	}
 	arg := []string{"-c", networkCmd}
 	env := []string{}
 	cmd := &monitor.Command{
