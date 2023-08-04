@@ -200,6 +200,9 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 	if err != nil {
 		fmt.Println("写入文件失败：", err)
 	}
+	if err := os.Chmod(path, 0755); err != nil {
+		fmt.Println("Error setting execution permission", err)
+	}
 	//arg := []string{"-c", networkCmd}
 	arg := []string{}
 	env := []string{}
