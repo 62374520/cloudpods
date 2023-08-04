@@ -187,9 +187,9 @@ func (qga *QemuGuestAgent) QgaGetNetwork() ([]byte, error) {
 }
 
 func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([]byte, error) {
-	networkCmd := fmt.Sprintf("nmcli connection modify '%s' ipv4.method manual ipv4.address '%s' ipv4.gateway '%s'\n nmcli connection up '%s'", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Gateway, qgaNetMod.Device)
+	networkCmd := fmt.Sprintf("nmcli connection modify '%s' ipv4.method manual ipv4.address '%s' ipv4.gateway '%s'\nnmcli connection up '%s'", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Gateway, qgaNetMod.Device)
 	// 打开或创建文件
-	file, err := os.Create("/tmp/qgaExecTest.txt")
+	file, err := os.Create("/tmp/qgaExecTest1.txt")
 	if err != nil {
 		fmt.Println("无法打开或创建文件：", err)
 	}
