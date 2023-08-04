@@ -189,7 +189,8 @@ func (qga *QemuGuestAgent) QgaGetNetwork() ([]byte, error) {
 func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([]byte, error) {
 	networkCmd := fmt.Sprintf("nmcli connection modify '%s' ipv4.method manual ipv4.address '%s' ipv4.gateway '%s'\nnmcli connection up '%s'", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Gateway, qgaNetMod.Device)
 	// 打开或创建文件
-	file, err := os.Create("/tmp/qgaExecTest1.txt")
+	path := "/tmp/qgaNetworkMod.sh"
+	file, err := os.Create(path)
 	if err != nil {
 		fmt.Println("无法打开或创建文件：", err)
 	}
@@ -199,12 +200,13 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 	if err != nil {
 		fmt.Println("写入文件失败：", err)
 	}
-	arg := []string{"-c", networkCmd}
+	//arg := []string{"-c", networkCmd}
+	arg := []string{}
 	env := []string{}
 	cmd := &monitor.Command{
 		Execute: "guest-exec",
 		Args: map[string]interface{}{
-			"path":           "/bin/bash",
+			"path":           path,
 			"arg":            arg,
 			"env":            env,
 			"input-data":     "",
