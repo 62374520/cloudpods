@@ -176,14 +176,28 @@ func (qga *QemuGuestAgent) GuestInfoTask() ([]byte, error) {
 }
 
 func (qga *QemuGuestAgent) QgaGetNetwork() ([]byte, error) {
-	cmd := &monitor.Command{
-		Execute: "guest-network-get-interfaces",
+	//fileFileOpenPath := "/tmp/testFileOpen.sh"
+	cmdFileOpen := &monitor.Command{
+		Execute: "guest-file-open",
+		Args: map[string]interface{}{
+			"path": "/tmp/testFileOpen.sh",
+			"mode": "w+",
+		},
 	}
-	res, err := qga.execCmd(cmd, true, -1)
+	rawResFileOpen, err := qga.execCmd(cmdFileOpen, true, -1)
 	if err != nil {
 		return nil, err
 	}
-	return *res, nil
+	return *rawResFileOpen, nil
+
+	//cmd := &monitor.Command{
+	//	Execute: "guest-network-get-interfaces",
+	//}
+	//res, err := qga.execCmd(cmd, true, -1)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//return *res, nil
 }
 
 type GuestOsInfo struct {
