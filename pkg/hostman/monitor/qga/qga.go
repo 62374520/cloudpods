@@ -206,37 +206,37 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 	networkCmd := fmt.Sprintf("#!/bin/bash\nnmcli connection modify '%s' ipv4.method manual ipv4.address '%s' ipv4.gateway '%s'\nnmcli connection up '%s'", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Gateway, qgaNetMod.Device)
 	contentEncode := base64.StdEncoding.EncodeToString([]byte(networkCmd))
 
-	//测试guest-get-osinfo
-	cmdOsInfo := &monitor.Command{
-		Execute: "guest-get-osinfo",
-	}
-	rawResOsInfo, err := qga.execCmd(cmdOsInfo, true, -1)
-	resOsInfo := new(GuestOsInfo)
-	err = json.Unmarshal(*rawResOsInfo, resOsInfo)
-	if err != nil {
-		return nil, errors.Wrap(err, "unmarshal raw response")
-	}
-	//打开或创建文件
-	qgaOsInfoPath := "/tmp/qgaOsInfoTest.txt"
-	fileOsInfo, err := os.Create(qgaOsInfoPath)
-	if err != nil {
-		fmt.Println("无法打开或创建文件：", err)
-	}
-	defer fileOsInfo.Close() // 保证在程序结束时关闭文件
-
-	_, err = fileOsInfo.Write([]byte("id:" + resOsInfo.Id + "\nkernel-release:" + resOsInfo.KernelRelease +
-		"\nkernel-version:" + resOsInfo.KernelVersion + "\nmachine:" + resOsInfo.Machine + "\nname:" + resOsInfo.Name +
-		"\npretty-name:" + resOsInfo.PrettyName + "\nversion:" + resOsInfo.Version + "\nversion-id:" + resOsInfo.VersionId))
-	if err != nil {
-		fmt.Println("写入文件失败：", err)
-	}
+	////测试guest-get-osinfo,成功
+	//cmdOsInfo := &monitor.Command{
+	//	Execute: "guest-get-osinfo",
+	//}
+	//rawResOsInfo, err := qga.execCmd(cmdOsInfo, true, -1)
+	//resOsInfo := new(GuestOsInfo)
+	//err = json.Unmarshal(*rawResOsInfo, resOsInfo)
+	//if err != nil {
+	//	return nil, errors.Wrap(err, "unmarshal raw response")
+	//}
+	////打开或创建文件
+	//qgaOsInfoPath := "/tmp/qgaOsInfoTest.txt"
+	//fileOsInfo, err := os.Create(qgaOsInfoPath)
+	//if err != nil {
+	//	fmt.Println("无法打开或创建文件：", err)
+	//}
+	//defer fileOsInfo.Close() // 保证在程序结束时关闭文件
+	//
+	//_, err = fileOsInfo.Write([]byte("id:" + resOsInfo.Id + "\nkernel-release:" + resOsInfo.KernelRelease +
+	//	"\nkernel-version:" + resOsInfo.KernelVersion + "\nmachine:" + resOsInfo.Machine + "\nname:" + resOsInfo.Name +
+	//	"\npretty-name:" + resOsInfo.PrettyName + "\nversion:" + resOsInfo.Version + "\nversion-id:" + resOsInfo.VersionId))
+	//if err != nil {
+	//	fmt.Println("写入文件失败：", err)
+	//}
 
 	fileFileOpenPath := "/tmp/testFileOpen.sh"
 	cmdFileOpen := &monitor.Command{
 		Execute: "guest-file-open",
 		Args: map[string]interface{}{
 			"path": fileFileOpenPath,
-			"mode": "r",
+			"mode": "w",
 		},
 	}
 	rawResFileOpen, err := qga.execCmd(cmdFileOpen, true, -1)
