@@ -200,34 +200,35 @@ type GuestOsInfo struct {
 
 func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([]byte, error) {
 
+	//测试guest-get-osinfo
+	cmdOsInfo := &monitor.Command{
+		Execute: "guest-get-osinfo",
+	}
+	rawResOsInfo, err := qga.execCmd(cmdOsInfo, true, -1)
+	resOsInfo := new(GuestOsInfo)
+	err = json.Unmarshal(*rawResOsInfo, resOsInfo)
+	if err != nil {
+		return nil, errors.Wrap(err, "unmarshal raw response")
+	}
+	//打开或创建文件
+	qgaOsInfoPath := "/tmp/qgaOsInfoTest.txt"
+	fileOsInfo, err := os.Create(qgaOsInfoPath)
+	if err != nil {
+		fmt.Println("无法打开或创建文件：", err)
+	}
+	defer fileOsInfo.Close() // 保证在程序结束时关闭文件
+
+	_, err = fileOsInfo.Write([]byte("id:" + resOsInfo.Id + "\nkernel-release:" + resOsInfo.KernelRelease +
+		"\nkernel-version:" + resOsInfo.KernelVersion + "\nmachine:" + resOsInfo.Machine + "\nname:" + resOsInfo.Name +
+		"\npretty-name:" + resOsInfo.PrettyName + "\nversion:" + resOsInfo.Version + "\nversion-id:" + resOsInfo.VersionId))
+	if err != nil {
+		fmt.Println("写入文件失败：", err)
+	}
+
 	networkCmd := fmt.Sprintf("#!/bin/bash\nnmcli connection modify '%s' ipv4.method manual ipv4.address '%s' ipv4.gateway '%s'\nnmcli connection up '%s'", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Gateway, qgaNetMod.Device)
 	contentEncode := base64.StdEncoding.EncodeToString([]byte(networkCmd))
 
-	////测试guest-get-osinfo,成功
-	//cmdOsInfo := &monitor.Command{
-	//	Execute: "guest-get-osinfo",
-	//}
-	//rawResOsInfo, err := qga.execCmd(cmdOsInfo, true, -1)
-	//resOsInfo := new(GuestOsInfo)
-	//err = json.Unmarshal(*rawResOsInfo, resOsInfo)
-	//if err != nil {
-	//	return nil, errors.Wrap(err, "unmarshal raw response")
-	//}
-	////打开或创建文件
-	//qgaOsInfoPath := "/tmp/qgaOsInfoTest.txt"
-	//fileOsInfo, err := os.Create(qgaOsInfoPath)
-	//if err != nil {
-	//	fmt.Println("无法打开或创建文件：", err)
-	//}
-	//defer fileOsInfo.Close() // 保证在程序结束时关闭文件
-	//
-	//_, err = fileOsInfo.Write([]byte("id:" + resOsInfo.Id + "\nkernel-release:" + resOsInfo.KernelRelease +
-	//	"\nkernel-version:" + resOsInfo.KernelVersion + "\nmachine:" + resOsInfo.Machine + "\nname:" + resOsInfo.Name +
-	//	"\npretty-name:" + resOsInfo.PrettyName + "\nversion:" + resOsInfo.Version + "\nversion-id:" + resOsInfo.VersionId))
-	//if err != nil {
-	//	fmt.Println("写入文件失败：", err)
-	//}
-
+	//文件打开命令
 	fileFileOpenPath := "/tmp/testFileOpen.sh"
 	cmdFileOpen := &monitor.Command{
 		Execute: "guest-file-open",
@@ -245,33 +246,34 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 		fmt.Println("转换失败：", err)
 	}
 
-	// 打开或创建文件
+	// 写入打开文件结果
 	file, err := os.Create("/tmp/qgaFileOpenTest.txt")
 	if err != nil {
 		fmt.Println("无法打开或创建文件：", err)
 	}
 	defer file.Close() // 保证在程序结束时关闭文件
 
-	strNum := strconv.Itoa(int(returnFileNum))
-	byteSlice := []byte(strNum)
-	_, err = file.Write(byteSlice)
-	if err != nil {
-		fmt.Println("写入文件失败：", err)
-	}
+	//strNum := strconv.Itoa(int(returnFileNum))
+	//byteSlice := []byte(strNum)
+	//_, err = file.Write(byteSlice)
+	//if err != nil {
+	//	fmt.Println("写入文件失败：", err)
+	//}
 
-	//打开或创建文件
-	openTestPath := "/tmp/qgaFileOpenTestRaw.txt"
-	fileOpenTest, err := os.Create(openTestPath)
-	if err != nil {
-		fmt.Println("无法打开或创建文件：", err)
-	}
-	defer fileOpenTest.Close() // 保证在程序结束时关闭文件
+	////写入打开文件结果，与上面进行对照，查看返回类型
+	//openTestPath := "/tmp/qgaFileOpenTestRaw.txt"
+	//fileOpenTest, err := os.Create(openTestPath)
+	//if err != nil {
+	//	fmt.Println("无法打开或创建文件：", err)
+	//}
+	//defer fileOpenTest.Close() // 保证在程序结束时关闭文件
+	//
+	//_, err = fileOpenTest.Write(*rawResFileOpen)
+	//if err != nil {
+	//	fmt.Println("写入文件失败：", err)
+	//}
 
-	_, err = fileOpenTest.Write(*rawResFileOpen)
-	if err != nil {
-		fmt.Println("写入文件失败：", err)
-	}
-
+	//文件内容写入shell脚本
 	cmdFileWrite := &monitor.Command{
 		Execute: "guest-file-write",
 		Args: map[string]interface{}{
@@ -284,7 +286,7 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 		return nil, err
 	}
 
-	//打开或创建文件
+	//写入write的执行结果
 	writeTestPath := "/tmp/qgaFileWriteTest.txt"
 	fileWriteTest, err := os.Create(writeTestPath)
 	if err != nil {
@@ -298,6 +300,7 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 		fmt.Println("写入文件失败：", err)
 	}
 
+	//关闭文件
 	cmdFileClose := &monitor.Command{
 		Execute: "guest-file-close",
 		Args: map[string]interface{}{
@@ -309,7 +312,7 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 		return nil, err
 	}
 
-	//打开或创建文件
+	//写入Close的返回结果
 	closeTestPath := "/tmp/qgaFileCloseTest.txt"
 	fileCloseTest, err := os.Create(closeTestPath)
 	if err != nil {
@@ -357,45 +360,6 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 		return nil, err
 	}
 	return *resExec, nil
-
-	//return *rawResFileClose, nil
-
-	//networkCmd := fmt.Sprintf("#!/bin/bash\nnmcli connection modify '%s' ipv4.method manual ipv4.address '%s' ipv4.gateway '%s'\nnmcli connection up '%s'", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Gateway, qgaNetMod.Device)
-	//networkCmd := fmt.Sprintf("#!/bin/bash\necho 'helloaaaa' > '/tmp/hello.txt'")
-	// 打开或创建文件
-	//path := "/tmp/qgaNetworkMod.sh"
-	//file, err := os.Create(path)
-	//if err != nil {
-	//	fmt.Println("无法打开或创建文件：", err)
-	//}
-	//defer file.Close() // 保证在程序结束时关闭文件
-	//
-	//_, err = file.Write([]byte(networkCmd))
-	//if err != nil {
-	//	fmt.Println("写入文件失败：", err)
-	//}
-	//if err := os.Chmod(path, 0755); err != nil {
-	//	fmt.Println("Error setting execution permission", err)
-	//}
-	//arg := []string{"-c", networkCmd}
-
-	//arg := []string{}
-	//env := []string{}
-	//cmd := &monitor.Command{
-	//	Execute: "guest-exec",
-	//	Args: map[string]interface{}{
-	//		"path":           path,
-	//		"arg":            arg,
-	//		"env":            env,
-	//		"input-data":     "",
-	//		"capture-output": true,
-	//	},
-	//}
-	//res, err := qga.execCmd(cmd, true, -1)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//return *res, nil
 }
 
 func (qga *QemuGuestAgent) QgaCommand(cmd *monitor.Command) ([]byte, error) {
