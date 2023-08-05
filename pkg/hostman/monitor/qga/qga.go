@@ -325,13 +325,12 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 	//给文件执行权限
 	shellAddAuth := "chmod +x " + fileFileOpenPath
 	arg := []string{"-c", shellAddAuth}
-	env := []string{}
 	cmdAddAuth := &monitor.Command{
 		Execute: "guest-exec",
 		Args: map[string]interface{}{
 			"path":           "/bin/bash",
 			"arg":            arg,
-			"env":            env,
+			"env":            []string{},
 			"input-data":     "",
 			"capture-output": true,
 		},
@@ -340,16 +339,15 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(resAddAuth, nil)
+	fmt.Println(resAddAuth)
 
 	//执行shell脚本
-	argExec := []string{}
 	cmdExecShell := &monitor.Command{
 		Execute: "guest-exec",
 		Args: map[string]interface{}{
 			"path":           fileFileOpenPath,
-			"arg":            argExec,
-			"env":            env,
+			"arg":            []string{},
+			"env":            []string{},
 			"input-data":     "",
 			"capture-output": true,
 		},
