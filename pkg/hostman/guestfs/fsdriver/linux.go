@@ -1891,6 +1891,10 @@ func (d *SCoreOsRootFs) DeployPublicKey(rootFs IDiskPartition, selUsr string, pu
 	return nil
 }
 
+func (d *SCoreOsRootFs) DeployQgaBlackList(rootFs IDiskPartition) error {
+	return nil
+}
+
 func (d *SCoreOsRootFs) DeployHosts(rootFs IDiskPartition, hostname, domain string, ips []string) error {
 	d.GetConfig().SetEtcHosts("localhost")
 	return nil

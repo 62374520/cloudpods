@@ -254,6 +254,10 @@ func (w *SWindowsRootFs) DeployHostname(part IDiskPartition, hostname, domain st
 	return w.putGuestScriptContents("/windows/hostnamecfg.bat", hostScripts)
 }
 
+func (w *SWindowsRootFs) DeployQgaBlackList(part IDiskPartition) error {
+	return nil
+}
+
 func (w *SWindowsRootFs) DeployHosts(part IDiskPartition, hn, domain string, ips []string) error {
 	var (
 		ETC_HOSTS = "/windows/system32/drivers/etc/hosts"

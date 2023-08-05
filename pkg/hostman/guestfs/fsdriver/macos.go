@@ -112,6 +112,10 @@ func (m *SMacOSRootFs) DeployHostname(part IDiskPartition, hostname, domain stri
 	return nil
 }
 
+func (m *SMacOSRootFs) DeployQgaBlackList(part IDiskPartition) error {
+	return nil
+}
+
 func (m *SMacOSRootFs) DeployHosts(part IDiskPartition, hn, domain string, ips []string) error {
 	return nil
 }
