@@ -203,8 +203,8 @@ type GuestFileOpen struct {
 
 func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([]byte, error) {
 
-	networkCmd := fmt.Sprintf("#!/bin/bash\nnmcli connection modify '%s' ipv4.method manual ipv4.address '%s' ipv4.gateway '%s'\nnmcli connection up '%s'", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Gateway, qgaNetMod.Device)
-	contentEncode := base64.StdEncoding.EncodeToString([]byte(networkCmd))
+	//networkCmd := fmt.Sprintf("#!/bin/bash\nnmcli connection modify '%s' ipv4.method manual ipv4.address '%s' ipv4.gateway '%s'\nnmcli connection up '%s'", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Gateway, qgaNetMod.Device)
+	//contentEncode := base64.StdEncoding.EncodeToString([]byte(networkCmd))
 
 	//测试guest-get-osinfo
 	cmdOsInfo := &monitor.Command{
@@ -257,78 +257,78 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 		fmt.Println("写入文件失败：", err)
 	}
 
-	return *rawResFileOpen, err
+	return *rawResFileOpen, nil
 
-	resFileOpen := new(GuestFileOpen)
-	err = json.Unmarshal(*rawResFileOpen, resFileOpen)
-	if err != nil {
-		return nil, errors.Wrap(err, "unmarshal raw response")
-	}
-
-	//打开或创建文件
-	openTestPath := "/tmp/qgaFileOpenTest.txt"
-	fileOpenTest, err := os.Create(openTestPath)
-	if err != nil {
-		fmt.Println("无法打开或创建文件：", err)
-	}
-	defer fileOpenTest.Close() // 保证在程序结束时关闭文件
-
-	_, err = fileOpenTest.Write([]byte("Pid:" + string(resFileOpen.Pid)))
-	if err != nil {
-		fmt.Println("写入文件失败：", err)
-	}
-
-	cmdFileWrite := &monitor.Command{
-		Execute: "guest-file-write",
-		Args: map[string]interface{}{
-			"handle":  resFileOpen.Pid,
-			"buf-b64": contentEncode,
-		},
-	}
-	rawResFileWrite, err := qga.execCmd(cmdFileWrite, true, -1)
-	if err != nil {
-		return nil, err
-	}
-
-	//打开或创建文件
-	writeTestPath := "/tmp/qgaFileWriteTest.txt"
-	fileWriteTest, err := os.Create(writeTestPath)
-	if err != nil {
-		fmt.Println("无法打开或创建文件：", err)
-	}
-	defer fileWriteTest.Close() // 保证在程序结束时关闭文件
-
-	_, err = fileWriteTest.Write([]byte("encode:" + contentEncode + "\n"))
-	_, err = fileWriteTest.Write(*rawResFileWrite)
-	if err != nil {
-		fmt.Println("写入文件失败：", err)
-	}
-
-	cmdFileClose := &monitor.Command{
-		Execute: "guest-file-close",
-		Args: map[string]interface{}{
-			"handle": resFileOpen.Pid,
-		},
-	}
-	rawResFileClose, err := qga.execCmd(cmdFileClose, true, -1)
-	if err != nil {
-		return nil, err
-	}
-
-	//打开或创建文件
-	closeTestPath := "/tmp/qgaFileCloseTest.txt"
-	fileCloseTest, err := os.Create(closeTestPath)
-	if err != nil {
-		fmt.Println("无法打开或创建文件：", err)
-	}
-	defer fileCloseTest.Close() // 保证在程序结束时关闭文件
-
-	_, err = fileCloseTest.Write(*rawResFileClose)
-	if err != nil {
-		fmt.Println("写入文件失败：", err)
-	}
-
-	return *rawResFileClose, nil
+	//resFileOpen := new(GuestFileOpen)
+	//err = json.Unmarshal(*rawResFileOpen, resFileOpen)
+	//if err != nil {
+	//	return nil, errors.Wrap(err, "unmarshal raw response")
+	//}
+	//
+	////打开或创建文件
+	//openTestPath := "/tmp/qgaFileOpenTest.txt"
+	//fileOpenTest, err := os.Create(openTestPath)
+	//if err != nil {
+	//	fmt.Println("无法打开或创建文件：", err)
+	//}
+	//defer fileOpenTest.Close() // 保证在程序结束时关闭文件
+	//
+	//_, err = fileOpenTest.Write([]byte("Pid:" + string(resFileOpen.Pid)))
+	//if err != nil {
+	//	fmt.Println("写入文件失败：", err)
+	//}
+	//
+	//cmdFileWrite := &monitor.Command{
+	//	Execute: "guest-file-write",
+	//	Args: map[string]interface{}{
+	//		"handle":  resFileOpen.Pid,
+	//		"buf-b64": contentEncode,
+	//	},
+	//}
+	//rawResFileWrite, err := qga.execCmd(cmdFileWrite, true, -1)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	////打开或创建文件
+	//writeTestPath := "/tmp/qgaFileWriteTest.txt"
+	//fileWriteTest, err := os.Create(writeTestPath)
+	//if err != nil {
+	//	fmt.Println("无法打开或创建文件：", err)
+	//}
+	//defer fileWriteTest.Close() // 保证在程序结束时关闭文件
+	//
+	//_, err = fileWriteTest.Write([]byte("encode:" + contentEncode + "\n"))
+	//_, err = fileWriteTest.Write(*rawResFileWrite)
+	//if err != nil {
+	//	fmt.Println("写入文件失败：", err)
+	//}
+	//
+	//cmdFileClose := &monitor.Command{
+	//	Execute: "guest-file-close",
+	//	Args: map[string]interface{}{
+	//		"handle": resFileOpen.Pid,
+	//	},
+	//}
+	//rawResFileClose, err := qga.execCmd(cmdFileClose, true, -1)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	////打开或创建文件
+	//closeTestPath := "/tmp/qgaFileCloseTest.txt"
+	//fileCloseTest, err := os.Create(closeTestPath)
+	//if err != nil {
+	//	fmt.Println("无法打开或创建文件：", err)
+	//}
+	//defer fileCloseTest.Close() // 保证在程序结束时关闭文件
+	//
+	//_, err = fileCloseTest.Write(*rawResFileClose)
+	//if err != nil {
+	//	fmt.Println("写入文件失败：", err)
+	//}
+	//
+	//return *rawResFileClose, nil
 
 	//networkCmd := fmt.Sprintf("#!/bin/bash\nnmcli connection modify '%s' ipv4.method manual ipv4.address '%s' ipv4.gateway '%s'\nnmcli connection up '%s'", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Gateway, qgaNetMod.Device)
 	//networkCmd := fmt.Sprintf("#!/bin/bash\necho 'helloaaaa' > '/tmp/hello.txt'")
