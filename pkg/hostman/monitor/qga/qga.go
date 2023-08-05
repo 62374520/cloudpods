@@ -236,7 +236,7 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 		Execute: "guest-file-open",
 		Args: map[string]interface{}{
 			"path": fileFileOpenPath,
-			"mode": "w",
+			"mode": "w+",
 		},
 	}
 	rawResFileOpen, err := qga.execCmd(cmdFileOpen, true, -1)
