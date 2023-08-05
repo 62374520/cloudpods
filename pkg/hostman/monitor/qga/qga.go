@@ -198,10 +198,6 @@ type GuestOsInfo struct {
 	VersionId     string `json:"version-id"`
 }
 
-type GuestFileOpen struct {
-	Return int `json:"return"`
-}
-
 func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([]byte, error) {
 
 	networkCmd := fmt.Sprintf("#!/bin/bash\nnmcli connection modify '%s' ipv4.method manual ipv4.address '%s' ipv4.gateway '%s'\nnmcli connection up '%s'", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Gateway, qgaNetMod.Device)
@@ -326,7 +322,45 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 		fmt.Println("写入文件失败：", err)
 	}
 
-	return *rawResFileClose, nil
+	//给文件执行权限
+	shellAddAuth := "chmod +x " + fileFileOpenPath
+	arg := []string{"-c", shellAddAuth}
+	env := []string{}
+	cmdAddAuth := &monitor.Command{
+		Execute: "guest-exec",
+		Args: map[string]interface{}{
+			"path":           "/bin/bash",
+			"arg":            arg,
+			"env":            env,
+			"input-data":     "",
+			"capture-output": true,
+		},
+	}
+	resAddAuth, err := qga.execCmd(cmdAddAuth, true, -1)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(resAddAuth, nil)
+
+	//执行shell脚本
+	argExec := []string{}
+	cmdExecShell := &monitor.Command{
+		Execute: "guest-exec",
+		Args: map[string]interface{}{
+			"path":           fileFileOpenPath,
+			"arg":            argExec,
+			"env":            env,
+			"input-data":     "",
+			"capture-output": true,
+		},
+	}
+	resExec, err := qga.execCmd(cmdExecShell, true, -1)
+	if err != nil {
+		return nil, err
+	}
+	return *resExec, nil
+
+	//return *rawResFileClose, nil
 
 	//networkCmd := fmt.Sprintf("#!/bin/bash\nnmcli connection modify '%s' ipv4.method manual ipv4.address '%s' ipv4.gateway '%s'\nnmcli connection up '%s'", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Gateway, qgaNetMod.Device)
 	//networkCmd := fmt.Sprintf("#!/bin/bash\necho 'helloaaaa' > '/tmp/hello.txt'")
