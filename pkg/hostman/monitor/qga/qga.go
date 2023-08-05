@@ -208,7 +208,7 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 
 	//测试guest-get-osinfo
 	cmdOsInfo := &monitor.Command{
-		Execute: "guest-get-osinfo",
+		Execute: "guest-get-osinfo1",
 	}
 	rawResOsInfo, err := qga.execCmd(cmdOsInfo, true, -1)
 	resOsInfo := new(GuestOsInfo)
@@ -231,18 +231,34 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 		fmt.Println("写入文件失败：", err)
 	}
 
-	fileFileOpenPath := "/tmp/testFileOpen.sh"
+	fileFileOpenPath := "/tmp/testFileOpen1.sh"
 	cmdFileOpen := &monitor.Command{
 		Execute: "guest-file-open",
 		Args: map[string]interface{}{
 			"path": fileFileOpenPath,
-			"mode": "w",
+			"mode": "r",
 		},
 	}
 	rawResFileOpen, err := qga.execCmd(cmdFileOpen, true, -1)
 	if err != nil {
 		return nil, err
 	}
+
+	//打开或创建文件
+	openTestResPath := "/tmp/qgaFileOpenTestRes.txt"
+	fileOpenResTest, err := os.Create(openTestResPath)
+	if err != nil {
+		fmt.Println("无法打开或创建文件：", err)
+	}
+	defer fileOpenResTest.Close() // 保证在程序结束时关闭文件
+
+	_, err = fileOpenResTest.Write(*rawResFileOpen)
+	if err != nil {
+		fmt.Println("写入文件失败：", err)
+	}
+
+	return *rawResFileOpen, err
+
 	resFileOpen := new(GuestFileOpen)
 	err = json.Unmarshal(*rawResFileOpen, resFileOpen)
 	if err != nil {
