@@ -198,8 +198,7 @@ type GuestOsInfo struct {
 	VersionId     string `json:"version-id"`
 }
 
-func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([]byte, error) {
-
+func (qga *QemuGuestAgent) QgaGuestGetOsInfo() (*GuestOsInfo, error) {
 	//测试guest-get-osinfo
 	cmdOsInfo := &monitor.Command{
 		Execute: "guest-get-osinfo",
@@ -210,6 +209,80 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 	if err != nil {
 		return nil, errors.Wrap(err, "unmarshal raw response")
 	}
+	return resOsInfo, nil
+}
+
+func (qga *QemuGuestAgent) QgaFileOpen(path string) (int, error) {
+	//文件打开命令
+	cmdFileOpen := &monitor.Command{
+		Execute: "guest-file-open",
+		Args: map[string]interface{}{
+			"path": path,
+			"mode": "w+",
+		},
+	}
+	rawResFileOpen, err := qga.execCmd(cmdFileOpen, true, -1)
+	if err != nil {
+		return 0, err
+	}
+	fileNum, err := strconv.ParseInt(string(*rawResFileOpen), 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return int(fileNum), nil
+}
+
+func (qga *QemuGuestAgent) QgaFileWrite(fileNum int, content string) error {
+	contentEncode := base64.StdEncoding.EncodeToString([]byte(content))
+	//文件内容写入shell脚本
+	cmdFileWrite := &monitor.Command{
+		Execute: "guest-file-write",
+		Args: map[string]interface{}{
+			"handle":  fileNum,
+			"buf-b64": contentEncode,
+		},
+	}
+	_, err := qga.execCmd(cmdFileWrite, true, -1)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (qga *QemuGuestAgent) QgaFileClose(fileNum int) error {
+	//关闭文件
+	cmdFileClose := &monitor.Command{
+		Execute: "guest-file-close",
+		Args: map[string]interface{}{
+			"handle": fileNum,
+		},
+	}
+	_, err := qga.execCmd(cmdFileClose, true, -1)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([]byte, error) {
+
+	////测试guest-get-osinfo
+	//cmdOsInfo := &monitor.Command{
+	//	Execute: "guest-get-osinfo",
+	//}
+	//rawResOsInfo, err := qga.execCmd(cmdOsInfo, true, -1)
+	//resOsInfo := new(GuestOsInfo)
+	//err = json.Unmarshal(*rawResOsInfo, resOsInfo)
+	//if err != nil {
+	//	return nil, errors.Wrap(err, "unmarshal raw response")
+	//}
+
+	//获取操作系统相关信息
+	resOsInfo, err := qga.QgaGuestGetOsInfo()
+	if err != nil {
+		return nil, err
+	}
+
 	//打开或创建文件
 	qgaOsInfoPath := "/tmp/qgaOsInfoTest.txt"
 	fileOsInfo, err := os.Create(qgaOsInfoPath)
@@ -226,32 +299,37 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 	}
 
 	networkCmd := fmt.Sprintf("#!/bin/bash\nnmcli connection modify '%s' ipv4.method manual ipv4.address '%s' ipv4.gateway '%s'\nnmcli connection up '%s'", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Gateway, qgaNetMod.Device)
-	contentEncode := base64.StdEncoding.EncodeToString([]byte(networkCmd))
+	//contentEncode := base64.StdEncoding.EncodeToString([]byte(networkCmd))
 
 	//文件打开命令
 	fileFileOpenPath := "/tmp/testFileOpen.sh"
-	cmdFileOpen := &monitor.Command{
-		Execute: "guest-file-open",
-		Args: map[string]interface{}{
-			"path": fileFileOpenPath,
-			"mode": "w+",
-		},
-	}
-	rawResFileOpen, err := qga.execCmd(cmdFileOpen, true, -1)
+	returnFileNum, err := qga.QgaFileOpen(fileFileOpenPath)
 	if err != nil {
 		return nil, err
 	}
-	returnFileNum, err := strconv.ParseInt(string(*rawResFileOpen), 10, 64)
-	if err != nil {
-		fmt.Println("转换失败：", err)
-	}
 
-	// 写入打开文件结果
-	file, err := os.Create("/tmp/qgaFileOpenTest.txt")
-	if err != nil {
-		fmt.Println("无法打开或创建文件：", err)
-	}
-	defer file.Close() // 保证在程序结束时关闭文件
+	//cmdFileOpen := &monitor.Command{
+	//	Execute: "guest-file-open",
+	//	Args: map[string]interface{}{
+	//		"path": fileFileOpenPath,
+	//		"mode": "w+",
+	//	},
+	//}
+	//rawResFileOpen, err := qga.execCmd(cmdFileOpen, true, -1)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//returnFileNum, err := strconv.ParseInt(string(*rawResFileOpen), 10, 64)
+	//if err != nil {
+	//	fmt.Println("转换失败：", err)
+	//}
+
+	//// 写入打开文件结果
+	//file, err := os.Create("/tmp/qgaFileOpenTest.txt")
+	//if err != nil {
+	//	fmt.Println("无法打开或创建文件：", err)
+	//}
+	//defer file.Close() // 保证在程序结束时关闭文件
 
 	//strNum := strconv.Itoa(int(returnFileNum))
 	//byteSlice := []byte(strNum)
@@ -273,57 +351,67 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 	//	fmt.Println("写入文件失败：", err)
 	//}
 
-	//文件内容写入shell脚本
-	cmdFileWrite := &monitor.Command{
-		Execute: "guest-file-write",
-		Args: map[string]interface{}{
-			"handle":  returnFileNum,
-			"buf-b64": contentEncode,
-		},
-	}
-	rawResFileWrite, err := qga.execCmd(cmdFileWrite, true, -1)
+	err = qga.QgaFileWrite(returnFileNum, networkCmd)
 	if err != nil {
 		return nil, err
 	}
 
-	//写入write的执行结果
-	writeTestPath := "/tmp/qgaFileWriteTest.txt"
-	fileWriteTest, err := os.Create(writeTestPath)
-	if err != nil {
-		fmt.Println("无法打开或创建文件：", err)
-	}
-	defer fileWriteTest.Close() // 保证在程序结束时关闭文件
+	////文件内容写入shell脚本
+	//cmdFileWrite := &monitor.Command{
+	//	Execute: "guest-file-write",
+	//	Args: map[string]interface{}{
+	//		"handle":  returnFileNum,
+	//		"buf-b64": contentEncode,
+	//	},
+	//}
+	//rawResFileWrite, err := qga.execCmd(cmdFileWrite, true, -1)
+	//if err != nil {
+	//	return nil, err
+	//}
 
-	_, err = fileWriteTest.Write([]byte("encode:" + contentEncode + "\n"))
-	_, err = fileWriteTest.Write(*rawResFileWrite)
-	if err != nil {
-		fmt.Println("写入文件失败：", err)
-	}
+	////写入write的执行结果
+	//writeTestPath := "/tmp/qgaFileWriteTest.txt"
+	//fileWriteTest, err := os.Create(writeTestPath)
+	//if err != nil {
+	//	fmt.Println("无法打开或创建文件：", err)
+	//}
+	//defer fileWriteTest.Close() // 保证在程序结束时关闭文件
+	//
+	//_, err = fileWriteTest.Write([]byte("encode:" + contentEncode + "\n"))
+	//_, err = fileWriteTest.Write(*rawResFileWrite)
+	//if err != nil {
+	//	fmt.Println("写入文件失败：", err)
+	//}
 
-	//关闭文件
-	cmdFileClose := &monitor.Command{
-		Execute: "guest-file-close",
-		Args: map[string]interface{}{
-			"handle": returnFileNum,
-		},
-	}
-	rawResFileClose, err := qga.execCmd(cmdFileClose, true, -1)
+	err = qga.QgaFileClose(returnFileNum)
 	if err != nil {
 		return nil, err
 	}
 
-	//写入Close的返回结果
-	closeTestPath := "/tmp/qgaFileCloseTest.txt"
-	fileCloseTest, err := os.Create(closeTestPath)
-	if err != nil {
-		fmt.Println("无法打开或创建文件：", err)
-	}
-	defer fileCloseTest.Close() // 保证在程序结束时关闭文件
+	////关闭文件
+	//cmdFileClose := &monitor.Command{
+	//	Execute: "guest-file-close",
+	//	Args: map[string]interface{}{
+	//		"handle": returnFileNum,
+	//	},
+	//}
+	//rawResFileClose, err := qga.execCmd(cmdFileClose, true, -1)
+	//if err != nil {
+	//	return nil, err
+	//}
 
-	_, err = fileCloseTest.Write(*rawResFileClose)
-	if err != nil {
-		fmt.Println("写入文件失败：", err)
-	}
+	////写入Close的返回结果
+	//closeTestPath := "/tmp/qgaFileCloseTest.txt"
+	//fileCloseTest, err := os.Create(closeTestPath)
+	//if err != nil {
+	//	fmt.Println("无法打开或创建文件：", err)
+	//}
+	//defer fileCloseTest.Close() // 保证在程序结束时关闭文件
+	//
+	//_, err = fileCloseTest.Write(*rawResFileClose)
+	//if err != nil {
+	//	fmt.Println("写入文件失败：", err)
+	//}
 
 	//给文件执行权限
 	shellAddAuth := "chmod +x " + fileFileOpenPath

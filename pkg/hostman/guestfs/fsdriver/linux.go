@@ -1926,7 +1926,7 @@ func (d *SCoreOsRootFs) DeployQgaBlackList(rootFs IDiskPartition) error {
 #
 # You can get the list of RPC commands using \"qemu-ga --blacklist='?'\".
 # There should be no spaces between commas and commands in the blacklist.
-BLACKLIST_RPC=guest-file-read,guest-file-seek,guest-file-flush,guest-exec-status
+BLACKLIST_RPC=guest-file-seek,guest-file-flush,guest-exec-status
 
 # Fsfreeze hook script specification.
 #
