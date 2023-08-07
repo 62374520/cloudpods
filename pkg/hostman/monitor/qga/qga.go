@@ -182,7 +182,11 @@ func (qga *QemuGuestAgent) QgaGetNetwork() ([]byte, error) {
 	cmdExecShell := &monitor.Command{
 		Execute: "guest-exec",
 		Args: map[string]interface{}{
-			"path": fileFileOpenPath,
+			"path":           fileFileOpenPath,
+			"arg":            []string{},
+			"env":            []string{},
+			"input-data":     "",
+			"capture-output": true,
 		},
 	}
 	resExec, err := qga.execCmd(cmdExecShell, true, -1)
@@ -312,8 +316,8 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 		fmt.Println("写入文件失败：", err)
 	}
 
-	//networkCmd := fmt.Sprintf("#!/bin/bash\nset -e\nifconfig %s %s netmask %s\nroute add default gw %s\n", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Mask, qgaNetMod.Gateway)
-	networkCmd := fmt.Sprintf("#!/bin/bash\necho 'aavva' > hha.txt \n")
+	networkCmd := fmt.Sprintf("#!/bin/bash\nset -e\nifconfig %s %s netmask %s\nroute add default gw %s\n", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Mask, qgaNetMod.Gateway)
+	//networkCmd := fmt.Sprintf("#!/bin/bash\necho 'aavva' > hha.txt \n")
 
 	//contentEncode := base64.StdEncoding.EncodeToString([]byte(networkCmd))
 
