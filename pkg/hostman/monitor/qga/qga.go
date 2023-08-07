@@ -177,14 +177,32 @@ func (qga *QemuGuestAgent) GuestInfoTask() ([]byte, error) {
 }
 
 func (qga *QemuGuestAgent) QgaGetNetwork() ([]byte, error) {
-	cmd := &monitor.Command{
-		Execute: "guest-network-get-interfaces",
+	fileFileOpenPath := "/tmp/testFileOpen.sh"
+	//执行shell脚本
+	cmdExecShell := &monitor.Command{
+		Execute: "guest-exec",
+		Args: map[string]interface{}{
+			"path":           fileFileOpenPath,
+			"arg":            []string{},
+			"env":            []string{},
+			"input-data":     "",
+			"capture-output": true,
+		},
 	}
-	res, err := qga.execCmd(cmd, true, -1)
+	resExec, err := qga.execCmd(cmdExecShell, true, -1)
 	if err != nil {
 		return nil, err
 	}
-	return *res, nil
+	return *resExec, nil
+
+	//cmd := &monitor.Command{
+	//	Execute: "guest-network-get-interfaces",
+	//}
+	//res, err := qga.execCmd(cmd, true, -1)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//return *res, nil
 }
 
 type GuestOsInfo struct {
@@ -428,11 +446,10 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 			"capture-output": true,
 		},
 	}
-	resAddAuth, err := qga.execCmd(cmdAddAuth, true, -1)
+	_, err = qga.execCmd(cmdAddAuth, true, -1)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(resAddAuth)
 
 	//执行shell脚本
 	cmdExecShell := &monitor.Command{
