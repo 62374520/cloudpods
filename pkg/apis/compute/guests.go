@@ -987,6 +987,7 @@ type ServerQgaGuestExecTestInput struct {
 	ServerQgaTimeoutInput
 	Device  string
 	Ip      string
+	Mask    string
 	Gateway string
 }
 

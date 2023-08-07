@@ -100,7 +100,7 @@ func AddGuestTaskHandler(prefix string, app *appsrv.Application) {
 			"qga-guest-info-task":      qgaGuestInfoTask,
 			"qga-command-test":         qgaCommandTest,
 			"qga-get-network":          qgaGetNetwork,
-			"qga-guest-exec-test":      qgaGuestExecTest,
+			"qga-set-network":          qgaSetNetwork,
 		} {
 			app.AddHandler("POST",
 				fmt.Sprintf("%s/%s/<sid>/%s", prefix, keyWord, action),
@@ -849,20 +849,33 @@ func qgaGetNetwork(ctx context.Context, userCred mcclient.TokenCredential, sid s
 	return gm.QgaGetNetwork(sid)
 }
 
-func qgaGuestExecTest(ctx context.Context, userCred mcclient.TokenCredential, sid string, body jsonutils.JSONObject) (interface{}, error) {
+func qgaSetNetwork(ctx context.Context, userCred mcclient.TokenCredential, sid string, body jsonutils.JSONObject) (interface{}, error) {
 	gm := guestman.GetGuestManager()
 	input := computeapi.ServerQgaGuestExecTestInput{}
 	err := body.Unmarshal(&input)
 	if err != nil {
-		return nil, httperrors.NewInputParameterError("unmarshal input to ServerQgaGuestExecTestInput: %s", err.Error())
+		return nil, httperrors.NewInputParameterError("unmarshal input to ServerQgaSetNetworkInput: %s", err.Error())
+	}
+	if input.Device == "" {
+		return nil, httperrors.NewMissingParameterError("device")
+	}
+	if input.Ip == "" {
+		return nil, httperrors.NewMissingParameterError("ip")
+	}
+	if input.Mask == "" {
+		return nil, httperrors.NewMissingParameterError("mask")
+	}
+	if input.Gateway == "" {
+		return nil, httperrors.NewMissingParameterError("gateway")
 	}
 
 	qgaNetMod := &monitor.NetworkModify{
 		Device:  input.Device,
 		Ip:      input.Ip,
+		Mask:    input.Mask,
 		Gateway: input.Gateway,
 	}
-	return gm.QgaGuestExecTest(qgaNetMod, sid, input.Timeout)
+	return gm.QgaSetNetwork(qgaNetMod, sid, input.Timeout)
 
 }
 

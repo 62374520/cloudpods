@@ -85,6 +85,7 @@ type Command struct {
 type NetworkModify struct {
 	Device  string `json:"device"`
 	Ip      string `json:"ip"`
+	Mask    string `json:"mask"`
 	Gateway string `json:"gateway"`
 }
 

@@ -110,7 +110,7 @@ func (m *SGuestManager) QgaGuestInfoTask(sid string) (string, error) {
 	return "", errors.Errorf("qga unfinished last cmd, is qga unavailable?")
 }
 
-func (m *SGuestManager) QgaGuestExecTest(netmod *monitor.NetworkModify, sid string, execTimeout int) (string, error) {
+func (m *SGuestManager) QgaSetNetwork(netmod *monitor.NetworkModify, sid string, execTimeout int) (string, error) {
 	guest, err := m.checkAndInitGuestQga(sid)
 	if err != nil {
 		return "", err
@@ -123,7 +123,7 @@ func (m *SGuestManager) QgaGuestExecTest(netmod *monitor.NetworkModify, sid stri
 			guest.guestAgent.SetTimeout(execTimeout)
 			defer guest.guestAgent.ResetTimeout()
 		}
-		res, err = guest.guestAgent.QgaGuestExecTest(netmod)
+		res, err = guest.guestAgent.QgaSetNetwork(netmod)
 		if err != nil {
 			err = errors.Wrapf(err, "modify %s network failed", netmod.Device)
 		}

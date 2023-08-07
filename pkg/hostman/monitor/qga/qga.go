@@ -264,7 +264,7 @@ func (qga *QemuGuestAgent) QgaFileClose(fileNum int) error {
 	return nil
 }
 
-func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([]byte, error) {
+func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]byte, error) {
 
 	////测试guest-get-osinfo
 	//cmdOsInfo := &monitor.Command{
@@ -298,7 +298,7 @@ func (qga *QemuGuestAgent) QgaGuestExecTest(qgaNetMod *monitor.NetworkModify) ([
 		fmt.Println("写入文件失败：", err)
 	}
 
-	networkCmd := fmt.Sprintf("#!/bin/bash\nnmcli connection modify '%s' ipv4.method manual ipv4.address '%s' ipv4.gateway '%s'\nnmcli connection up '%s'", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Gateway, qgaNetMod.Device)
+	networkCmd := fmt.Sprintf("#!/bin/bash\nifconfig %s %s netmask %s\nroute add default gw %s", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Mask, qgaNetMod.Gateway)
 	//contentEncode := base64.StdEncoding.EncodeToString([]byte(networkCmd))
 
 	//文件打开命令

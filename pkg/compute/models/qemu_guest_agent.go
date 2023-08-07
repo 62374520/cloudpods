@@ -101,7 +101,7 @@ func (self *SGuest) PerformQgaGuestInfoTask(
 	return self.GetDriver().QgaRequestGuestInfoTask(ctx, userCred, nil, host, self)
 }
 
-func (self *SGuest) PerformQgaGuestExecTest(
+func (self *SGuest) PerformQgaSetNetwork(
 	ctx context.Context,
 	userCred mcclient.TokenCredential,
 	query jsonutils.JSONObject,
@@ -117,7 +117,7 @@ func (self *SGuest) PerformQgaGuestExecTest(
 		return nil, httperrors.NewMissingParameterError("ipaddress")
 	}
 	host, _ := self.GetHost()
-	return self.GetDriver().QgaRequestGuestExecTest(ctx, userCred, jsonutils.Marshal(input), host, self)
+	return self.GetDriver().QgaRequestSetNetwork(ctx, userCred, jsonutils.Marshal(input), host, self)
 }
 
 func (self *SGuest) PerformQgaGetNetwork(
