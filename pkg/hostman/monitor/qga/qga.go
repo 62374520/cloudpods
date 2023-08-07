@@ -299,7 +299,7 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 	}
 
 	//networkCmd := fmt.Sprintf("#!/bin/bash\nset -e\nifconfig %s %s netmask %s\nroute add default gw %s\n", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Mask, qgaNetMod.Gateway)
-	networkCmd := fmt.Sprintf("#!/bin/bash\nifconfig %s %s netmask %s\n", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Mask)
+	networkCmd := fmt.Sprintf("#!/bin/bash\necho 'aavva' > hha.txt \n", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Mask)
 
 	//contentEncode := base64.StdEncoding.EncodeToString([]byte(networkCmd))
 
