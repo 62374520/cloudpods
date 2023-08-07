@@ -298,7 +298,7 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 		fmt.Println("写入文件失败：", err)
 	}
 
-	networkCmd := fmt.Sprintf("#!/bin/bash\nifconfig %s %s netmask %s\nroute add default gw %s", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Mask, qgaNetMod.Gateway)
+	networkCmd := fmt.Sprintf("#!/bin/bash\nifconfig %s %s netmask %s\nroute add default gw %s dev %s", qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Mask, qgaNetMod.Gateway, qgaNetMod.Device)
 	//contentEncode := base64.StdEncoding.EncodeToString([]byte(networkCmd))
 
 	//文件打开命令
