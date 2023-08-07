@@ -182,11 +182,7 @@ func (qga *QemuGuestAgent) QgaGetNetwork() ([]byte, error) {
 	cmdExecShell := &monitor.Command{
 		Execute: "guest-exec",
 		Args: map[string]interface{}{
-			"path":           fileFileOpenPath,
-			"arg":            []string{},
-			"env":            []string{},
-			"input-data":     "",
-			"capture-output": true,
+			"path": fileFileOpenPath,
 		},
 	}
 	resExec, err := qga.execCmd(cmdExecShell, true, -1)
