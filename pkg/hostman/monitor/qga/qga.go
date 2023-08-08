@@ -317,8 +317,8 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 
 	networkCmd := fmt.Sprintf("#!/bin/bash\n/sbin/ip link set dev %s down\n"+
 		"/sbin/ip -4 address flush dev %s\n/sbin/ip -4 address add %s dev %s\n"+
-		"/sbin/ip link set dev %s up\n/sbin/ip route add default via %s dev %s\n",
-		qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Ipmask, qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Gateway, qgaNetMod.Device)
+		"/sbin/ip link set dev %s up\n/sbin/ip route del default dev %s\n/sbin/ip route add default via %s dev %s\n",
+		qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Ipmask, qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Gateway, qgaNetMod.Device, qgaNetMod.Device)
 
 	//networkCmd := fmt.Sprintf("#!/bin/bash\necho 'aavva' > hha.txt \n")
 
