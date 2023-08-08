@@ -851,7 +851,7 @@ func qgaGetNetwork(ctx context.Context, userCred mcclient.TokenCredential, sid s
 
 func qgaSetNetwork(ctx context.Context, userCred mcclient.TokenCredential, sid string, body jsonutils.JSONObject) (interface{}, error) {
 	gm := guestman.GetGuestManager()
-	input := computeapi.ServerQgaGuestExecTestInput{}
+	input := computeapi.ServerQgaSetNetwork{}
 	err := body.Unmarshal(&input)
 	if err != nil {
 		return nil, httperrors.NewInputParameterError("unmarshal input to ServerQgaSetNetworkInput: %s", err.Error())
@@ -859,11 +859,8 @@ func qgaSetNetwork(ctx context.Context, userCred mcclient.TokenCredential, sid s
 	if input.Device == "" {
 		return nil, httperrors.NewMissingParameterError("device")
 	}
-	if input.Ip == "" {
-		return nil, httperrors.NewMissingParameterError("ip")
-	}
-	if input.Mask == "" {
-		return nil, httperrors.NewMissingParameterError("mask")
+	if input.Ipmask == "" {
+		return nil, httperrors.NewMissingParameterError("ipmask")
 	}
 	if input.Gateway == "" {
 		return nil, httperrors.NewMissingParameterError("gateway")
@@ -871,8 +868,7 @@ func qgaSetNetwork(ctx context.Context, userCred mcclient.TokenCredential, sid s
 
 	qgaNetMod := &monitor.NetworkModify{
 		Device:  input.Device,
-		Ip:      input.Ip,
-		Mask:    input.Mask,
+		Ipmask:  input.Ipmask,
 		Gateway: input.Gateway,
 	}
 	return gm.QgaSetNetwork(qgaNetMod, sid, input.Timeout)

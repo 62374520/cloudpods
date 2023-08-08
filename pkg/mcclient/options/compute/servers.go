@@ -878,8 +878,7 @@ type ServerQgaSetNetwork struct {
 	ServerIdOptions
 
 	DEVICE  string `help:"network connection"`
-	IP      string `help:"ip"`
-	MASK    string `help:"mask"`
+	IPMASK  string `help:"ip/mask"`
 	GATEWAY string `help:"gateway"`
 }
 

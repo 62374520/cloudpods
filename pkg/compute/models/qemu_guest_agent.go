@@ -105,7 +105,7 @@ func (self *SGuest) PerformQgaSetNetwork(
 	ctx context.Context,
 	userCred mcclient.TokenCredential,
 	query jsonutils.JSONObject,
-	input *api.ServerQgaGuestExecTestInput,
+	input *api.ServerQgaSetNetwork,
 ) (jsonutils.JSONObject, error) {
 	if self.PowerStates != api.VM_POWER_STATES_ON {
 		return nil, httperrors.NewBadRequestError("can't use qga in vm status: %s", self.Status)
@@ -113,8 +113,11 @@ func (self *SGuest) PerformQgaSetNetwork(
 	if input.Device == "" {
 		return nil, httperrors.NewMissingParameterError("device")
 	}
-	if input.Ip == "" {
-		return nil, httperrors.NewMissingParameterError("ipaddress")
+	if input.Ipmask == "" {
+		return nil, httperrors.NewMissingParameterError("Ipmask")
+	}
+	if input.Gateway == "" {
+		return nil, httperrors.NewMissingParameterError("gateway")
 	}
 	host, _ := self.GetHost()
 	return self.GetDriver().QgaRequestSetNetwork(ctx, userCred, jsonutils.Marshal(input), host, self)

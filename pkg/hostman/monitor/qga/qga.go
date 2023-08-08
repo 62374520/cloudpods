@@ -26,7 +26,6 @@ import (
 	"sync/atomic"
 	"time"
 	"unsafe"
-
 	"yunion.io/x/log"
 	"yunion.io/x/pkg/errors"
 
@@ -316,13 +315,17 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 		fmt.Println("写入文件失败：", err)
 	}
 
-	networkCmd := fmt.Sprintf("#!/bin/bash\n/sbin/ifconfig %s down\n/sbin/ifconfig %s %s netmask %s\n/sbin/ifconfig %s up\n/sbin/route add default gw %s\n", qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Ip, qgaNetMod.Mask, qgaNetMod.Device, qgaNetMod.Gateway)
+	networkCmd := fmt.Sprintf("#!/bin/bash\n/sbin/ip link set dev %s down\n"+
+		"/sbin/ip address replace %s dev %s\n/sbin/ip link set dev %s up\n"+
+		"/sbin/ip route add default via %s\n",
+		qgaNetMod.Device, qgaNetMod.Ipmask, qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Gateway)
+
 	//networkCmd := fmt.Sprintf("#!/bin/bash\necho 'aavva' > hha.txt \n")
 
 	//contentEncode := base64.StdEncoding.EncodeToString([]byte(networkCmd))
 
 	//文件打开命令
-	fileFileOpenPath := "/tmp/testFileOpen.sh"
+	fileFileOpenPath := "/tmp/networkMod.sh"
 	returnFileNum, err := qga.QgaFileOpen(fileFileOpenPath)
 	if err != nil {
 		return nil, err
@@ -434,7 +437,7 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 	//}
 
 	//给文件执行权限
-	shellAddAuth := "chmod 777 " + fileFileOpenPath
+	shellAddAuth := "chmod +x " + fileFileOpenPath
 	arg := []string{"-c", shellAddAuth}
 	cmdAddAuth := &monitor.Command{
 		Execute: "guest-exec",

@@ -983,11 +983,10 @@ type ServerQgaSetPasswordInput struct {
 type ServerQgaGuestInfoTaskInput struct {
 }
 
-type ServerQgaGuestExecTestInput struct {
+type ServerQgaSetNetwork struct {
 	ServerQgaTimeoutInput
 	Device  string
-	Ip      string
-	Mask    string
+	Ipmask  string
 	Gateway string
 }
 
