@@ -325,7 +325,7 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 		fmt.Println("写入文件失败：", err)
 	}
 
-	if resOsInfo.Name == "Microsoft window" {
+	if resOsInfo.Name == "Microsoft Windows" {
 		ip, subnetMask, err := ParseIPAndSubnet(qgaNetMod.Ipmask)
 		if err != nil {
 			fmt.Println("Error:", err)
