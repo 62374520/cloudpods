@@ -299,7 +299,8 @@ func ParseIPAndSubnet(input string) (string, string, error) {
 		subnetSize = subnetSize*10 + int(c-'0')
 	}
 
-	subnetMask := net.CIDRMask(subnetSize, 32).String()
+	mask := net.CIDRMask(subnetSize, 32)
+	subnetMask := net.IP(mask).To4().String()
 	return ip, subnetMask, nil
 }
 
@@ -331,7 +332,7 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 			fmt.Println("Error:", err)
 			return nil, err
 		}
-		networkCmd := fmt.Sprintf("netsh interface ip set address name=%s source=static addr=%s mask=%s gateway=%s",
+		networkCmd := fmt.Sprintf("netsh interface ip set address name='%s' source=static addr=%s mask=%s gateway=%s",
 			qgaNetMod.Device, ip, subnetMask, qgaNetMod.Gateway)
 
 		//打开或创建文件
