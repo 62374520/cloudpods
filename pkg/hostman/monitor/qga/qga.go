@@ -327,13 +327,14 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 	}
 
 	if resOsInfo.Name == "Microsoft Windows" {
-		ip, subnetMask, err := ParseIPAndSubnet(qgaNetMod.Ipmask)
-		if err != nil {
-			fmt.Println("Error:", err)
-			return nil, err
-		}
-		networkCmd := fmt.Sprintf("netsh interface ip set address name=\"%s\" source=static addr=%s mask=%s gateway=%s",
-			qgaNetMod.Device, ip, subnetMask, qgaNetMod.Gateway)
+		//ip, subnetMask, err := ParseIPAndSubnet(qgaNetMod.Ipmask)
+		//if err != nil {
+		//	fmt.Println("Error:", err)
+		//	return nil, err
+		//}
+		networkCmd := "echo 111>C:/1.txt"
+		//networkCmd := fmt.Sprintf("netsh interface ip set address name=\"%s\" source=static addr=%s mask=%s gateway=%s",
+		//			qgaNetMod.Device, ip, subnetMask, qgaNetMod.Gateway)
 
 		//打开或创建文件
 		qgaWinTest := "/tmp/qgaWinTest.txt"
