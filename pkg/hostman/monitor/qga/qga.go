@@ -332,7 +332,7 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 			fmt.Println("Error:", err)
 			return nil, err
 		}
-		networkCmd := fmt.Sprintf("netsh interface ip set address name='%s' source=static addr=%s mask=%s gateway=%s",
+		networkCmd := fmt.Sprintf("netsh interface ip set address name=\"%s\" source=static addr=%s mask=%s gateway=%s",
 			qgaNetMod.Device, ip, subnetMask, qgaNetMod.Gateway)
 
 		//打开或创建文件
