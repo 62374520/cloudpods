@@ -61,8 +61,9 @@ func (self *GuestRestartNetworkTask) OnCloseIpMacSrcCheckComplete(ctx context.Co
 	guest := obj.(*models.SGuest)
 
 	ip, _ := self.Params.GetString("ip")
+
 	// 打开或创建文件
-	file, err := os.Create("/tmp/closeIpComplete.txt")
+	file, err := os.Create("/tmp/OnCloseIpMacSrcCheckComplete.txt")
 	if err != nil {
 		fmt.Println("无法打开或创建文件：", err)
 	}
@@ -78,7 +79,7 @@ func (self *GuestRestartNetworkTask) OnCloseIpMacSrcCheckComplete(ctx context.Co
 	if err != nil {
 		fmt.Println("写入文件失败：", err)
 	}
-	
+
 	session := auth.GetAdminSession(ctx, "")
 	sshable, clean, err := self.checkSshable(ctx, guest, ip)
 	log.Infof("start to CheckSshableForYunionCloud")
