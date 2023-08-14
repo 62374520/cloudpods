@@ -17,11 +17,9 @@ package models
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -2248,24 +2246,6 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 		return nil, httperrors.NewInvalidStatusError("Cannot change network ip_addr in status %s", self.Status)
 	}
 
-	// 打开或创建文件
-	file3, err := os.Create("/tmp/performChangeIpaddrData.txt")
-	if err != nil {
-		fmt.Println("无法打开或创建文件：", err)
-	}
-	defer file3.Close() // 保证在程序结束时关闭文件
-
-	// 将 jsonutils.JSONDict 对象转换为 JSON 字节数组
-	dataBytes, err := json.Marshal(data)
-	if err != nil {
-		// 处理转换错误
-		fmt.Println(err)
-	}
-	_, err = file3.Write(dataBytes)
-	if err != nil {
-		fmt.Println("写入文件失败：", err)
-	}
-
 	//查找数据中的reserve字段，并返回相应的值，如果不存在reserver字段或字段为空，返回false
 	reserve := jsonutils.QueryBoolean(data, "reserve", false)
 
@@ -2375,13 +2355,16 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 
 	//日志记录，gn为之前的网络
 	notes := jsonutils.NewDict()
+	notesTest := jsonutils.NewDict()
 	if gn != nil {
 		notes.Add(jsonutils.NewString(gn.IpAddr), "prev_ip")
+		notesTest.Add(jsonutils.NewString(data.String()), "data")
 	}
 	if ngn != nil {
 		notes.Add(jsonutils.NewString(ngn[0].IpAddr), "ip")
 	}
 	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_VM_CHANGE_NIC, notes, userCred, true)
+	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_ADDTAG, notesTest, userCred, true)
 
 	//检测数据中的重启网卡字段
 	restartNetwork, _ := data.Bool("restart_network")

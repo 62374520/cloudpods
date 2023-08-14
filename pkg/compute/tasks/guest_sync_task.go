@@ -50,70 +50,36 @@ func (self *GuestSyncConfTask) OnInit(ctx context.Context, obj db.IStandaloneMod
 }
 
 func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStandaloneModel, data jsonutils.JSONObject) {
-	//guest := obj.(*models.SGuest)
-	//
-	//// 打开或创建文件
-	//file3, err := os.Create("/tmp/OnSyncCompleteData3.txt")
-	//if err != nil {
-	//	fmt.Println("无法打开或创建文件：", err)
-	//}
-	//defer file3.Close() // 保证在程序结束时关闭文件
-	//
-	//// 将 jsonutils.JSONDict 对象转换为 JSON 字节数组
-	//dataBytes, err := json.Marshal(data)
-	//if err != nil {
-	//	// 处理转换错误
-	//	fmt.Println(err)
-	//}
-	//_, err = file3.Write(dataBytes)
-	//if err != nil {
-	//	fmt.Println("写入文件失败：", err)
-	//}
-	//
-	//// 打开或创建文件
-	//file4, err := os.Create("/tmp/OnSyncCompleteDataParams4.txt")
-	//if err != nil {
-	//	fmt.Println("无法打开或创建文件：", err)
-	//}
-	//defer file4.Close() // 保证在程序结束时关闭文件
-	//
-	//// 将 jsonutils.JSONDict 对象转换为 JSON 字节数组
-	//paramsBytes, err := json.Marshal(self.Params)
-	//if err != nil {
-	//	// 处理转换错误
-	//	fmt.Println(err)
-	//}
-	//_, err = file4.Write(paramsBytes)
-	//if err != nil {
-	//	fmt.Println("写入文件失败：", err)
-	//}
-	//
-	//if fwOnly, _ := self.GetParams().Bool("fw_only"); fwOnly {
-	//	db.OpsLog.LogEvent(guest, db.ACT_SYNC_CONF, nil, self.UserCred)
-	//	if restart, _ := self.Params.Bool("restart_network"); !restart {
-	//		self.SetStageComplete(ctx, nil)
-	//		return
-	//	}
-	//	prevIp, err := self.Params.GetString("prev_ip")
-	//	if err != nil {
-	//		log.Errorf("unable to get prev_ip when restart_network is true when sync guest")
-	//		self.SetStageComplete(ctx, nil)
-	//		return
-	//	}
-	//	if inBlockStream := jsonutils.QueryBoolean(self.Params, "in_block_stream", false); inBlockStream {
-	//		fmt.Println(prevIp)
-	//		//guest.StartRestartNetworkTask(ctx, self.UserCred, "", prevIp, true)
-	//	} else {
-	//		fmt.Println(prevIp)
-	//		//guest.StartRestartNetworkTask(ctx, self.UserCred, "", prevIp, false)
-	//	}
-	//	self.SetStageComplete(ctx, guest.GetShortDesc(ctx))
-	//} else if data.Contains("task") {
-	//	// XXX this is only applied to KVM, which will call task_complete twice
-	//	self.SetStage("on_disk_sync_complete", nil)
-	//} else {
-	//	self.OnDiskSyncComplete(ctx, guest, data)
-	//}
+	guest := obj.(*models.SGuest)
+
+	notesTest := jsonutils.NewDict()
+	notesTest.Add(jsonutils.NewString(self.Params.String()), "Params")
+	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_ADDTAG, notesTest, self.UserCred, true)
+
+	if fwOnly, _ := self.GetParams().Bool("fw_only"); fwOnly {
+		db.OpsLog.LogEvent(guest, db.ACT_SYNC_CONF, nil, self.UserCred)
+		if restart, _ := self.Params.Bool("restart_network"); !restart {
+			self.SetStageComplete(ctx, nil)
+			return
+		}
+		prevIp, err := self.Params.GetString("prev_ip")
+		if err != nil {
+			log.Errorf("unable to get prev_ip when restart_network is true when sync guest")
+			self.SetStageComplete(ctx, nil)
+			return
+		}
+		if inBlockStream := jsonutils.QueryBoolean(self.Params, "in_block_stream", false); inBlockStream {
+			guest.StartRestartNetworkTask(ctx, self.UserCred, "", prevIp, true)
+		} else {
+			guest.StartRestartNetworkTask(ctx, self.UserCred, "", prevIp, false)
+		}
+		self.SetStageComplete(ctx, guest.GetShortDesc(ctx))
+	} else if data.Contains("task") {
+		// XXX this is only applied to KVM, which will call task_complete twice
+		self.SetStage("on_disk_sync_complete", nil)
+	} else {
+		self.OnDiskSyncComplete(ctx, guest, data)
+	}
 }
 
 func (self *GuestSyncConfTask) OnDiskSyncComplete(ctx context.Context, guest *models.SGuest, data jsonutils.JSONObject) {
