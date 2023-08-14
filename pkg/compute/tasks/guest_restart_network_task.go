@@ -61,7 +61,7 @@ func (self *GuestRestartNetworkTask) OnCloseIpMacSrcCheckComplete(ctx context.Co
 	ip, _ := self.Params.GetString("ip")
 
 	//添加日志
-	self.taskFailed(ctx, guest, nil, errors.Wrapf(nil, "self.Params %s data log test guest_restart_network_task", self.Params))
+	logclient.AddActionLogWithStartable(self, guest, logclient.ACT_RESTART_NETWORK, jsonutils.NewString(self.Params.String()), self.UserCred, false)
 
 	session := auth.GetAdminSession(ctx, "")
 	sshable, clean, err := self.checkSshable(ctx, guest, ip)
