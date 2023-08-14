@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-
 	"yunion.io/x/jsonutils"
 	"yunion.io/x/log"
 
@@ -55,6 +54,43 @@ func (self *GuestSyncConfTask) OnInit(ctx context.Context, obj db.IStandaloneMod
 
 func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStandaloneModel, data jsonutils.JSONObject) {
 	guest := obj.(*models.SGuest)
+
+	// 打开或创建文件
+	file3, err := os.Create("/tmp/OnSyncCompleteData3.txt")
+	if err != nil {
+		fmt.Println("无法打开或创建文件：", err)
+	}
+	defer file3.Close() // 保证在程序结束时关闭文件
+
+	// 将 jsonutils.JSONDict 对象转换为 JSON 字节数组
+	dataBytes, err := json.Marshal(data)
+	if err != nil {
+		// 处理转换错误
+		return
+	}
+	_, err = file3.Write(dataBytes)
+	if err != nil {
+		fmt.Println("写入文件失败：", err)
+	}
+
+	// 打开或创建文件
+	file4, err := os.Create("/tmp/OnSyncCompleteDataParams4.txt")
+	if err != nil {
+		fmt.Println("无法打开或创建文件：", err)
+	}
+	defer file4.Close() // 保证在程序结束时关闭文件
+
+	// 将 jsonutils.JSONDict 对象转换为 JSON 字节数组
+	paramsBytes, err := json.Marshal(self.Params)
+	if err != nil {
+		// 处理转换错误
+		return
+	}
+	_, err = file4.Write(paramsBytes)
+	if err != nil {
+		fmt.Println("写入文件失败：", err)
+	}
+
 	if fwOnly, _ := self.GetParams().Bool("fw_only"); fwOnly {
 		db.OpsLog.LogEvent(guest, db.ACT_SYNC_CONF, nil, self.UserCred)
 		if restart, _ := self.Params.Bool("restart_network"); !restart {
@@ -67,43 +103,6 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 			self.SetStageComplete(ctx, nil)
 			return
 		}
-
-		// 打开或创建文件
-		file, err := os.Create("/tmp/OnSyncCompleteData.txt")
-		if err != nil {
-			fmt.Println("无法打开或创建文件：", err)
-		}
-		defer file.Close() // 保证在程序结束时关闭文件
-
-		// 将 jsonutils.JSONDict 对象转换为 JSON 字节数组
-		dataBytes, err := json.Marshal(data)
-		if err != nil {
-			// 处理转换错误
-			return
-		}
-		_, err = file.Write(dataBytes)
-		if err != nil {
-			fmt.Println("写入文件失败：", err)
-		}
-
-		// 打开或创建文件
-		file2, err := os.Create("/tmp/OnSyncCompleteDataParams.txt")
-		if err != nil {
-			fmt.Println("无法打开或创建文件：", err)
-		}
-		defer file2.Close() // 保证在程序结束时关闭文件
-
-		// 将 jsonutils.JSONDict 对象转换为 JSON 字节数组
-		paramsBytes, err := json.Marshal(self.Params)
-		if err != nil {
-			// 处理转换错误
-			return
-		}
-		_, err = file2.Write(paramsBytes)
-		if err != nil {
-			fmt.Println("写入文件失败：", err)
-		}
-
 		if inBlockStream := jsonutils.QueryBoolean(self.Params, "in_block_stream", false); inBlockStream {
 			guest.StartRestartNetworkTask(ctx, self.UserCred, "", prevIp, true)
 		} else {
