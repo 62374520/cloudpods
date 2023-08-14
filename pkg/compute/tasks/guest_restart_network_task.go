@@ -73,7 +73,7 @@ func (self *GuestRestartNetworkTask) OnCloseIpMacSrcCheckComplete(ctx context.Co
 	paramsBytes, err := json.Marshal(self.Params)
 	if err != nil {
 		// 处理转换错误
-		return
+		fmt.Println(err)
 	}
 	_, err = file.Write(paramsBytes)
 	if err != nil {

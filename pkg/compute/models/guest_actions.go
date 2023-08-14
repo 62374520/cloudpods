@@ -17,9 +17,11 @@ package models
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -2244,6 +2246,24 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	//虚拟机状态检查
 	if self.Status != api.VM_READY && self.Status != api.VM_RUNNING && self.Status != api.VM_BLOCK_STREAM {
 		return nil, httperrors.NewInvalidStatusError("Cannot change network ip_addr in status %s", self.Status)
+	}
+
+	// 打开或创建文件
+	file3, err := os.Create("/tmp/PerformChangeIpaddrData.txt")
+	if err != nil {
+		fmt.Println("无法打开或创建文件：", err)
+	}
+	defer file3.Close() // 保证在程序结束时关闭文件
+
+	// 将 jsonutils.JSONDict 对象转换为 JSON 字节数组
+	dataBytes, err := json.Marshal(data)
+	if err != nil {
+		// 处理转换错误
+		fmt.Println(err)
+	}
+	_, err = file3.Write(dataBytes)
+	if err != nil {
+		fmt.Println("写入文件失败：", err)
 	}
 
 	//查找数据中的reserve字段，并返回相应的值，如果不存在reserver字段或字段为空，返回false

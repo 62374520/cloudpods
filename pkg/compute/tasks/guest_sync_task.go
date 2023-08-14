@@ -66,7 +66,7 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 	dataBytes, err := json.Marshal(data)
 	if err != nil {
 		// 处理转换错误
-		return
+		fmt.Println(err)
 	}
 	_, err = file3.Write(dataBytes)
 	if err != nil {
@@ -84,7 +84,7 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 	paramsBytes, err := json.Marshal(self.Params)
 	if err != nil {
 		// 处理转换错误
-		return
+		fmt.Println(err)
 	}
 	_, err = file4.Write(paramsBytes)
 	if err != nil {
