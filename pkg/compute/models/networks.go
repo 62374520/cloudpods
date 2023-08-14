@@ -918,6 +918,7 @@ type SNicConfig struct {
 
 func parseNetworkInfo(ctx context.Context, userCred mcclient.TokenCredential, info *api.NetworkConfig) (*api.NetworkConfig, error) {
 	if info.Network != "" {
+		//如果网络配置对象不为空，根据网络配置对象的Id或Name在数据库中查找
 		netObj, err := NetworkManager.FetchByIdOrName(userCred, info.Network)
 		if err != nil {
 			if err == sql.ErrNoRows {
@@ -926,7 +927,9 @@ func parseNetworkInfo(ctx context.Context, userCred mcclient.TokenCredential, in
 				return nil, err
 			}
 		}
+		//将查找到的结果转化为SNetwork结构体
 		net := netObj.(*SNetwork)
+		//判断用户操作权限，有权限就将网络对象ID赋值给网络标识
 		if net.ProjectId == userCred.GetProjectId() ||
 			(db.IsDomainAllowGet(ctx, userCred, net) && net.DomainId == userCred.GetProjectDomainId()) ||
 			db.IsAdminAllowGet(ctx, userCred, net) ||
@@ -964,25 +967,32 @@ func (self *SNetwork) getFreeAddressCount() (int, error) {
 }
 
 func isValidNetworkInfo(ctx context.Context, userCred mcclient.TokenCredential, netConfig *api.NetworkConfig, reuseAddr string) error {
+	//检查网络配置字段的Network是否为空
 	if len(netConfig.Network) > 0 {
+		//如果非空，从数据库中查找相应的网络对象
 		netObj, err := NetworkManager.FetchByIdOrName(userCred, netConfig.Network)
 		if err != nil {
 			return httperrors.NewResourceNotFoundError("Network %s not found: %v", netConfig.Network, err)
 		}
+		//将查找结果转为SNetwork结构体
 		net := netObj.(*SNetwork)
 		/*
 			// scheduler do the check
 			if !netConfig.Vip && !netConfig.Reserved && net.getFreeAddressCount() == 0 {
 				return fmt.Errorf("Address exhausted in network %s")
 			}*/
+		//如果网络配置中的Address字段不为空
 		if len(netConfig.Address) > 0 {
+			//将地址字段转为ipAddr类型
 			ipAddr, err := netutils.NewIPV4Addr(netConfig.Address)
 			if err != nil {
 				return err
 			}
+			//判断网络是否在有效范围内
 			if !net.IsAddressInRange(ipAddr) {
 				return httperrors.NewInputParameterError("Address %s not in range", netConfig.Address)
 			}
+			//判断是否为保留地址，判断用户是否有保留地址的权限
 			if netConfig.Reserved {
 				// the privilege to access reserved ip
 				if db.IsAdminAllowList(userCred, ReservedipManager).Result.IsDeny() {
@@ -992,6 +1002,7 @@ func isValidNetworkInfo(ctx context.Context, userCred mcclient.TokenCredential, 
 					return httperrors.NewInputParameterError("Address %s not reserved", netConfig.Address)
 				}
 			} else {
+				//如果地址已经被使用，并且是不可重用地址，会返回错误
 				used, err := net.isAddressUsed(netConfig.Address)
 				if err != nil {
 					return httperrors.NewInternalServerError("isAddressUsed fail %s", err)
@@ -1001,14 +1012,17 @@ func isValidNetworkInfo(ctx context.Context, userCred mcclient.TokenCredential, 
 				}
 			}
 		}
+		//判断网络带宽限制
 		if netConfig.BwLimit > api.MAX_BANDWIDTH {
 			return httperrors.NewInputParameterError("Bandwidth limit cannot exceed %dMbps", api.MAX_BANDWIDTH)
 		}
+		//验证网络类型，如果是裸金属，直接返回，不进行处理
 		if net.ServerType == api.NETWORK_TYPE_BAREMETAL {
 			// not check baremetal network free address here
 			// TODO: find better solution ?
 			return nil
 		}
+		//验证可用地址数量，并考虑是否有可重用地址，如果地址数量小于1，返回错误
 		freeCnt, err := net.getFreeAddressCount()
 		if err != nil {
 			return httperrors.NewInternalServerError("getFreeAddressCount fail %s", err)

@@ -210,6 +210,7 @@ func ParseDiskConfig(diskStr string, idx int) (*compute.DiskConfig, error) {
 }
 
 func ParseNetworkConfigByJSON(desc jsonutils.JSONObject, idx int) (*compute.NetworkConfig, error) {
+	//判断传入的desc是否为json字符串类型，如果是的话，将其解析为NetworkConfig结构体；如果不是，新建一个NetworkConfig结构体，传入idx，并将desc解析为conf
 	if _, ok := desc.(*jsonutils.JSONString); ok {
 		descStr, _ := desc.GetString()
 		return ParseNetworkConfig(descStr, idx)

@@ -68,6 +68,7 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 			guest.StartRestartNetworkTask(ctx, self.UserCred, "", prevIp, true)
 		} else {
 			guest.StartRestartNetworkTask(ctx, self.UserCred, "", prevIp, false)
+
 		}
 		self.SetStageComplete(ctx, guest.GetShortDesc(ctx))
 	} else if data.Contains("task") {

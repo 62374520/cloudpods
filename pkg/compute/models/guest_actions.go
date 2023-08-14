@@ -2192,6 +2192,7 @@ func (self *SGuest) startIsolatedDevicesSyncTask(ctx context.Context, userCred m
 }
 
 func (self *SGuest) findGuestnetworkByInfo(ipStr string, macStr string, index int64) (*SGuestnetwork, error) {
+	//如果传入的ip地址不为空，就根据ip地址进行查找；如果ip为空，就根据mac地址进行查找；如果mac地址为空，就根据索引进行查找，需要判断索引在有效范围内
 	if len(ipStr) > 0 {
 		gn, err := self.GetGuestnetworkByIp(ipStr)
 		if err != nil {
@@ -2240,25 +2241,31 @@ func (self *SGuest) getReuseAddr(gn *SGuestnetwork) string {
 // first detach the network, then attach a network with identity mac address but different IP configurations
 // TODO change IP address of a teaming NIC may fail!!
 func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.TokenCredential, query jsonutils.JSONObject, data jsonutils.JSONObject) (jsonutils.JSONObject, error) {
+	//虚拟机状态检查
 	if self.Status != api.VM_READY && self.Status != api.VM_RUNNING && self.Status != api.VM_BLOCK_STREAM {
 		return nil, httperrors.NewInvalidStatusError("Cannot change network ip_addr in status %s", self.Status)
 	}
 
+	//查找数据中的reserve字段，并返回相应的值，如果不存在reserver字段或字段为空，返回false
 	reserve := jsonutils.QueryBoolean(data, "reserve", false)
 
+	//提前数据中的ip地址，mac地址和index
 	ipStr, _ := data.GetString("ip_addr")
 	macStr, _ := data.GetString("mac")
 	index, _ := data.Int("index")
 
+	//按顺序，根据ip地址、mac地址和索引查找虚拟机的网络对象,gn表示之前的网络配置
 	gn, err := self.findGuestnetworkByInfo(ipStr, macStr, index)
 	if err != nil {
 		return nil, err
 	}
 
+	//获取数据中的网络描述
 	netDesc, err := data.Get("net_desc")
 	if err != nil {
 		return nil, httperrors.NewMissingParameterError("net_desc")
 	}
+	//将网络描述转化成conf,netDesc表示新的数据
 	conf, err := cmdline.ParseNetworkConfigByJSON(netDesc, -1)
 	if err != nil {
 		return nil, err
@@ -2269,20 +2276,25 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	if conf.Index == 0 {
 		conf.Index = int(gn.Index)
 	}
+	//解析网络配置，并判断用户权限，似乎就获取了网络配置的id，根据网络配置的id获取网络信息
 	conf, err = parseNetworkInfo(ctx, userCred, conf)
 	if err != nil {
 		return nil, err
 	}
+	//地址的有效性、带宽限制、网络类型等。它会根据不同的情况返回相应的验证错误
 	err = isValidNetworkInfo(ctx, userCred, conf, self.getReuseAddr(gn))
 	if err != nil {
 		return nil, err
 	}
+	//获取宿主机
 	host, _ := self.GetHost()
 
+	//ngn表示新的网络配置
 	ngn, err := func() ([]SGuestnetwork, error) {
 		lockman.LockRawObject(ctx, GuestnetworkManager.KeywordPlural(), "")
 		defer lockman.ReleaseRawObject(ctx, GuestnetworkManager.KeywordPlural(), "")
 
+		//修改mac地址相关，如果没有mac地址，直接赋值；如果mac地址与给的mac地址不一致，判断虚拟机的状态，检查是否有相同的mac地址，解绑网卡，附加新网络
 		if len(conf.Mac) > 0 {
 			if conf.Mac != gn.MacAddr {
 				if self.Status != api.VM_READY {
@@ -2306,10 +2318,12 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 			conf.Mac = gn.MacAddr
 		}
 
+		//将旧的网卡进行分离
 		err = self.detachNetworks(ctx, userCred, []SGuestnetwork{*gn}, reserve, false)
 		if err != nil {
 			return nil, err
 		}
+		//获取之前的虚拟网卡设备名称
 		conf.Ifname = gn.Ifname
 		ngn, err := self.attach2NetworkDesc(ctx, userCred, host, conf, nil, nil)
 		if err != nil {
@@ -2339,6 +2353,7 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 		return nil, err
 	}
 
+	//日志记录，gn为之前的网络
 	notes := jsonutils.NewDict()
 	if gn != nil {
 		notes.Add(jsonutils.NewString(gn.IpAddr), "prev_ip")
@@ -2348,6 +2363,7 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	}
 	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_VM_CHANGE_NIC, notes, userCred, true)
 
+	//检测数据中的重启网卡字段
 	restartNetwork, _ := data.Bool("restart_network")
 
 	taskData := jsonutils.NewDict()

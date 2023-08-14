@@ -16,7 +16,9 @@ package tasks
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	"yunion.io/x/jsonutils"
@@ -59,6 +61,24 @@ func (self *GuestRestartNetworkTask) OnCloseIpMacSrcCheckComplete(ctx context.Co
 	guest := obj.(*models.SGuest)
 
 	ip, _ := self.Params.GetString("ip")
+	// 打开或创建文件
+	file, err := os.Create("/tmp/closeIpComplete.txt")
+	if err != nil {
+		fmt.Println("无法打开或创建文件：", err)
+	}
+	defer file.Close() // 保证在程序结束时关闭文件
+
+	// 将 jsonutils.JSONDict 对象转换为 JSON 字节数组
+	paramsBytes, err := json.Marshal(self.Params)
+	if err != nil {
+		// 处理转换错误
+		return
+	}
+	_, err = file.Write(paramsBytes)
+	if err != nil {
+		fmt.Println("写入文件失败：", err)
+	}
+	
 	session := auth.GetAdminSession(ctx, "")
 	sshable, clean, err := self.checkSshable(ctx, guest, ip)
 	log.Infof("start to CheckSshableForYunionCloud")
