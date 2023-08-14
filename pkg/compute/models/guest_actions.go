@@ -2268,12 +2268,18 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	}
 
 	// log test
-	gnStr, err := json.Marshal(gn)
-	gnStrSlice := make([]string, len(gnStr))
-	for i, b := range gnStrSlice {
-		gnStrSlice[i] = string(b)
+	gnJSON, err := json.Marshal(gn)
+	if err != nil {
+		fmt.Println("Error:", err)
 	}
-	notesTest.Add(jsonutils.NewStringArray(gnStrSlice), "gn")
+	// 将 JSON 字节数组转换为字符串
+	jsonString := string(gnJSON)
+	// 使用 jsonutils.ParseString 创建 jsonutils.JSONObject 对象
+	gnJSONObject, err := jsonutils.ParseString(jsonString)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	notesTest.Add(jsonutils.NewString(gnJSONObject.String()), "gn")
 
 	//获取数据中的网络描述
 	netDesc, err := data.Get("net_desc")
@@ -2287,12 +2293,18 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	}
 
 	// log test
-	confStr, err := json.Marshal(conf)
-	confStrSlice := make([]string, len(confStr))
-	for i, b := range confStrSlice {
-		confStrSlice[i] = string(b)
+	confJSON, err := json.Marshal(conf)
+	if err != nil {
+		fmt.Println("Error:", err)
 	}
-	notesTest.Add(jsonutils.NewStringArray(confStrSlice), "conf1")
+	// 将 JSON 字节数组转换为字符串
+	confString := string(confJSON)
+	// 使用 jsonutils.ParseString 创建 jsonutils.JSONObject 对象
+	confJSONObject, err := jsonutils.ParseString(confString)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	notesTest.Add(jsonutils.NewString(confJSONObject.String()), "conf1")
 
 	if conf.BwLimit == 0 {
 		conf.BwLimit = gn.BwLimit
@@ -2307,12 +2319,18 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	}
 
 	// log test
-	confStr2, err := json.Marshal(conf)
-	confStrSlice2 := make([]string, len(confStr2))
-	for i, b := range confStrSlice2 {
-		confStrSlice2[i] = string(b)
+	confJSON2, err := json.Marshal(conf)
+	if err != nil {
+		fmt.Println("Error:", err)
 	}
-	notesTest.Add(jsonutils.NewStringArray(confStrSlice2), "conf2")
+	// 将 JSON 字节数组转换为字符串
+	confString2 := string(confJSON2)
+	// 使用 jsonutils.ParseString 创建 jsonutils.JSONObject 对象
+	confJSONObject2, err := jsonutils.ParseString(confString2)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	notesTest.Add(jsonutils.NewString(confJSONObject2.String()), "conf2")
 
 	//地址的有效性、带宽限制、网络类型等。它会根据不同的情况返回相应的验证错误
 	err = isValidNetworkInfo(ctx, userCred, conf, self.getReuseAddr(gn))
@@ -2387,12 +2405,18 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	}
 
 	// log test
-	ngnStr, err := json.Marshal(ngn)
-	ngnStrSlice := make([]string, len(ngnStr))
-	for i, b := range ngnStrSlice {
-		ngnStrSlice[i] = string(b)
+	ngnJSON, err := json.Marshal(ngn)
+	if err != nil {
+		fmt.Println("Error:", err)
 	}
-	notesTest.Add(jsonutils.NewStringArray(ngnStrSlice), "ngn")
+	// 将 JSON 字节数组转换为字符串
+	ngnString := string(ngnJSON)
+	// 使用 jsonutils.ParseString 创建 jsonutils.JSONObject 对象
+	ngnJSONObject, err := jsonutils.ParseString(ngnString)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	notesTest.Add(jsonutils.NewString(ngnJSONObject.String()), "ngn")
 
 	//日志记录，gn为之前的网络 添加日志
 	notes := jsonutils.NewDict()
