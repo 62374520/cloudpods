@@ -2247,10 +2247,9 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	if self.Status != api.VM_READY && self.Status != api.VM_RUNNING && self.Status != api.VM_BLOCK_STREAM {
 		return nil, httperrors.NewInvalidStatusError("Cannot change network ip_addr in status %s", self.Status)
 	}
-	ipStr, _ := data.GetString("ip_addr")...asfv
 
 	// 打开或创建文件
-	file3, err := os.Create("/tmp/PerformChangeIpaddrData.txt")
+	file3, err := os.Create("/tmp/performChangeIpaddrData.txt")
 	if err != nil {
 		fmt.Println("无法打开或创建文件：", err)
 	}
