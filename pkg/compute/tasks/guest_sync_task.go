@@ -52,9 +52,10 @@ func (self *GuestSyncConfTask) OnInit(ctx context.Context, obj db.IStandaloneMod
 func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStandaloneModel, data jsonutils.JSONObject) {
 	guest := obj.(*models.SGuest)
 
+	//添加日志 log test
 	notesTest := jsonutils.NewDict()
 	notesTest.Add(jsonutils.NewString(self.Params.String()), "Params")
-	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_ADDTAG, notesTest, self.UserCred, true)
+	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_ADDTAG, notesTest, self.UserCred, false)
 
 	if fwOnly, _ := self.GetParams().Bool("fw_only"); fwOnly {
 		db.OpsLog.LogEvent(guest, db.ACT_SYNC_CONF, nil, self.UserCred)

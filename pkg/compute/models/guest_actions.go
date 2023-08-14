@@ -2353,7 +2353,7 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 		return nil, err
 	}
 
-	//日志记录，gn为之前的网络
+	//日志记录，gn为之前的网络 添加日志
 	notes := jsonutils.NewDict()
 	notesTest := jsonutils.NewDict()
 	if gn != nil {
