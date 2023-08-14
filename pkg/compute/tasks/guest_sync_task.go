@@ -104,10 +104,11 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 			return
 		}
 		if inBlockStream := jsonutils.QueryBoolean(self.Params, "in_block_stream", false); inBlockStream {
-			guest.StartRestartNetworkTask(ctx, self.UserCred, "", prevIp, true)
+			fmt.Println(prevIp)
+			//guest.StartRestartNetworkTask(ctx, self.UserCred, "", prevIp, true)
 		} else {
-			guest.StartRestartNetworkTask(ctx, self.UserCred, "", prevIp, false)
-
+			fmt.Println(prevIp)
+			//guest.StartRestartNetworkTask(ctx, self.UserCred, "", prevIp, false)
 		}
 		self.SetStageComplete(ctx, guest.GetShortDesc(ctx))
 	} else if data.Contains("task") {
