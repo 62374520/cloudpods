@@ -17,6 +17,7 @@ package models
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -2254,11 +2255,25 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	macStr, _ := data.GetString("mac")
 	index, _ := data.Int("index")
 
+	//log test
+	notesTest := jsonutils.NewDict()
+	notesTest.Add(jsonutils.NewString(ipStr), "ip_addr")
+	notesTest.Add(jsonutils.NewString(macStr), "mac")
+	notesTest.Add(jsonutils.NewInt(index), "index")
+
 	//按顺序，根据ip地址、mac地址和索引查找虚拟机的网络对象,gn表示之前的网络配置
 	gn, err := self.findGuestnetworkByInfo(ipStr, macStr, index)
 	if err != nil {
 		return nil, err
 	}
+
+	// log test
+	gnStr, err := json.Marshal(gn)
+	gnStrSlice := make([]string, len(gnStr))
+	for i, b := range gnStrSlice {
+		gnStrSlice[i] = string(b)
+	}
+	notesTest.Add(jsonutils.NewStringArray(gnStrSlice), "gn")
 
 	//获取数据中的网络描述
 	netDesc, err := data.Get("net_desc")
@@ -2270,6 +2285,15 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	if err != nil {
 		return nil, err
 	}
+
+	// log test
+	confStr, err := json.Marshal(conf)
+	confStrSlice := make([]string, len(confStr))
+	for i, b := range confStrSlice {
+		confStrSlice[i] = string(b)
+	}
+	notesTest.Add(jsonutils.NewStringArray(confStrSlice), "conf1")
+
 	if conf.BwLimit == 0 {
 		conf.BwLimit = gn.BwLimit
 	}
@@ -2281,6 +2305,15 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	if err != nil {
 		return nil, err
 	}
+
+	// log test
+	confStr2, err := json.Marshal(conf)
+	confStrSlice2 := make([]string, len(confStr2))
+	for i, b := range confStrSlice2 {
+		confStrSlice2[i] = string(b)
+	}
+	notesTest.Add(jsonutils.NewStringArray(confStrSlice2), "conf2")
+
 	//地址的有效性、带宽限制、网络类型等。它会根据不同的情况返回相应的验证错误
 	err = isValidNetworkInfo(ctx, userCred, conf, self.getReuseAddr(gn))
 	if err != nil {
@@ -2353,17 +2386,28 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 		return nil, err
 	}
 
+	// log test
+	ngnStr, err := json.Marshal(ngn)
+	ngnStrSlice := make([]string, len(ngnStr))
+	for i, b := range ngnStrSlice {
+		ngnStrSlice[i] = string(b)
+	}
+	notesTest.Add(jsonutils.NewStringArray(ngnStrSlice), "ngn")
+
 	//日志记录，gn为之前的网络 添加日志
 	notes := jsonutils.NewDict()
-	notesTest := jsonutils.NewDict()
 	if gn != nil {
 		notes.Add(jsonutils.NewString(gn.IpAddr), "prev_ip")
+
+		//log test
 		notesTest.Add(jsonutils.NewString(data.String()), "data")
 	}
 	if ngn != nil {
 		notes.Add(jsonutils.NewString(ngn[0].IpAddr), "ip")
 	}
 	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_VM_CHANGE_NIC, notes, userCred, true)
+
+	//log test
 	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_ADDTAG, notesTest, userCred, true)
 
 	//检测数据中的重启网卡字段
