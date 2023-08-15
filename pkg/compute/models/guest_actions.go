@@ -17,7 +17,6 @@ package models
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -2268,18 +2267,8 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	}
 
 	// log test
-	gnJSON, err := json.Marshal(gn)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	// 将 JSON 字节数组转换为字符串
-	jsonString := string(gnJSON)
-	// 使用 jsonutils.ParseString 创建 jsonutils.JSONObject 对象
-	gnJSONObject, err := jsonutils.ParseString(jsonString)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	notesTest.Add(jsonutils.NewString(gnJSONObject.String()), "gn")
+	gnJSON := jsonutils.Marshal(gn)
+	notesTest.Add(jsonutils.NewString(gnJSON.String()), "gn")
 
 	//获取数据中的网络描述
 	netDesc, err := data.Get("net_desc")
@@ -2293,18 +2282,8 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	}
 
 	// log test
-	confJSON, err := json.Marshal(conf)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	// 将 JSON 字节数组转换为字符串
-	confString := string(confJSON)
-	// 使用 jsonutils.ParseString 创建 jsonutils.JSONObject 对象
-	confJSONObject, err := jsonutils.ParseString(confString)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	notesTest.Add(jsonutils.NewString(confJSONObject.String()), "conf1")
+	confJSON := jsonutils.Marshal(conf)
+	notesTest.Add(jsonutils.NewString(confJSON.String()), "conf1")
 
 	if conf.BwLimit == 0 {
 		conf.BwLimit = gn.BwLimit
@@ -2319,18 +2298,8 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	}
 
 	// log test
-	confJSON2, err := json.Marshal(conf)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	// 将 JSON 字节数组转换为字符串
-	confString2 := string(confJSON2)
-	// 使用 jsonutils.ParseString 创建 jsonutils.JSONObject 对象
-	confJSONObject2, err := jsonutils.ParseString(confString2)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	notesTest.Add(jsonutils.NewString(confJSONObject2.String()), "conf2")
+	confJSON2 := jsonutils.Marshal(conf)
+	notesTest.Add(jsonutils.NewString(confJSON2.String()), "conf2")
 
 	//地址的有效性、带宽限制、网络类型等。它会根据不同的情况返回相应的验证错误
 	err = isValidNetworkInfo(ctx, userCred, conf, self.getReuseAddr(gn))
@@ -2405,64 +2374,69 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	}
 
 	// log test
-	ngnJSON, err := json.Marshal(ngn)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	// 将 JSON 字节数组转换为字符串
-	ngnString := string(ngnJSON)
-	// 使用 jsonutils.ParseString 创建 jsonutils.JSONObject 对象
-	ngnJSONObject, err := jsonutils.ParseString(ngnString)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	notesTest.Add(jsonutils.NewString(ngnJSONObject.String()), "ngn")
+	ngnJSON := jsonutils.Marshal(ngn)
+	notesTest.Add(jsonutils.NewString(ngnJSON.String()), "ngn")
 
 	//需要将上述转为jsonobject类型
-	newIpAddr, _ := ngnJSONObject.GetString("IpAddr")
-	newMacAddr, _ := ngnJSONObject.GetString("MacAddr")
-	newIndex, _ := ngnJSONObject.Int("Index")
+	newIpAddr, _ := ngnJSON.GetString("IpAddr")
+	newMacAddr, _ := ngnJSON.GetString("MacAddr")
+	newIndex, _ := ngnJSON.Int("Index")
 	newNetwork, err := self.findGuestnetworkByInfo(newIpAddr, newMacAddr, newIndex)
 
 	// log test
-	newNetworkJSON, err := json.Marshal(newNetwork)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	// 将 JSON 字节数组转换为字符串
-	newNetworkString := string(newNetworkJSON)
-	// 使用 jsonutils.ParseString 创建 jsonutils.JSONObject 对象
-	newNetworkJSONObject, err := jsonutils.ParseString(newNetworkString)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	notesTest.Add(jsonutils.NewString(newNetworkJSONObject.String()), "newNetwork")
+	newNetworkJSON := jsonutils.Marshal(newNetwork)
+	notesTest.Add(jsonutils.NewString(newNetworkJSON.String()), "newNetwork")
 
 	//获取网卡的详细描述，里面有gateway和masklen
 	networkJsonDesc := newNetwork.getJsonDesc()
 	// log test
-	networkJsonDescJSON, err := json.Marshal(networkJsonDesc)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	// 将 JSON 字节数组转换为字符串
-	networkJsonDescString := string(networkJsonDescJSON)
-	// 使用 jsonutils.ParseString 创建 jsonutils.JSONObject 对象
-	networkJsonDescJSONObject, err := jsonutils.ParseString(networkJsonDescString)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
+	networkJsonDescJSONObject := jsonutils.Marshal(networkJsonDesc)
 	notesTest.Add(jsonutils.NewString(networkJsonDescJSONObject.String()), "networkJsonDesc")
 
 	needIpAddr, _ := networkJsonDescJSONObject.GetString("ip")
 	needMacAddr, _ := networkJsonDescJSONObject.GetString("mac")
 	needMaskLen, _ := networkJsonDescJSONObject.GetString("masklen")
 	needGateway, _ := networkJsonDescJSONObject.GetString("gateway")
-	IpAndMask, _ := fmt.Printf("%s/%s", needIpAddr, needMaskLen)
+	IpAndMask := fmt.Sprintf("%s/%s", needIpAddr, needMaskLen)
 	fmt.Println(needMacAddr, needGateway, IpAndMask)
 
 	ifnameDetail, err := self.PerformQgaGetNetwork(ctx, userCred, query, nil)
 	notesTest.Add(jsonutils.NewString(ifnameDetail.String()), "ifnameDetail")
+	notesTest.Add(jsonutils.NewString(IpAndMask), "IpAndMask")
+	notesTest.Add(jsonutils.NewString(needMacAddr), "needMacAddr")
+
+	type IPAddress struct {
+		IPAddress     string `json:"ip-address"`
+		IPAddressType string `json:"ip-address-type"`
+		Prefix        int    `json:"prefix"`
+	}
+
+	type IfnameDetailStruct struct {
+		HardwareAddress string      `json:"hardware-address"`
+		IPAddresses     []IPAddress `json:"ip-addresses"`
+		Name            string      `json:"name"`
+		Statistics      struct {
+			RxBytes   int `json:"rx-bytes"`
+			RxDropped int `json:"rx-dropped"`
+			RxErrs    int `json:"rx-errs"`
+			RxPackets int `json:"rx-packets"`
+			TxBytes   int `json:"tx-bytes"`
+			TxDropped int `json:"tx-dropped"`
+			TxErrs    int `json:"tx-errs"`
+			TxPackets int `json:"tx-packets"`
+		} `json:"statistics"`
+	}
+
+	var parsedData struct {
+		IfnameDetail []IfnameDetailStruct `json:"ifnameDetail"`
+	}
+	err = ifnameDetail.Unmarshal(parsedData)
+
+	for _, detail := range parsedData.IfnameDetail {
+		if detail.HardwareAddress == needMacAddr {
+			notesTest.Add(jsonutils.NewString(detail.Name), "detail.Name")
+		}
+	}
 
 	//日志记录，gn为之前的网络 添加日志
 	notes := jsonutils.NewDict()
