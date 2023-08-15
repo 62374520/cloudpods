@@ -25,7 +25,6 @@ import (
 	"strings"
 	"time"
 	"unicode"
-
 	"yunion.io/x/cloudmux/pkg/cloudprovider"
 	"yunion.io/x/jsonutils"
 	"yunion.io/x/log"
@@ -2390,12 +2389,12 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	newMacAddr, _ := networkJsonDescJSONObject.GetString("mac")
 	newMaskLen, _ := networkJsonDescJSONObject.GetString("masklen")
 	newGateway, _ := networkJsonDescJSONObject.GetString("gateway")
-	IpAndMask := fmt.Sprintf("%s/%s", newIpAddr, newMaskLen)
+	Ip_mask := fmt.Sprintf("%s/%s", newIpAddr, newMaskLen)
 	notesTest.Add(jsonutils.NewString(newIpAddr), "newIpAddr")
 	notesTest.Add(jsonutils.NewString(newMacAddr), "newMacAddr")
 	notesTest.Add(jsonutils.NewString(newMaskLen), "newMaskLen")
 	notesTest.Add(jsonutils.NewString(newGateway), "newGateway")
-	notesTest.Add(jsonutils.NewString(IpAndMask), "IpAndMask")
+	notesTest.Add(jsonutils.NewString(Ip_mask), "Ip_mask")
 
 	ifnameData, err := self.PerformQgaGetNetwork(ctx, userCred, query, nil)
 	notesTest.Add(jsonutils.NewString(ifnameData.String()), "ifnameData")
@@ -2428,10 +2427,13 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 		notesTest.Add(jsonutils.NewString(err.Error()), "err")
 	}
 
+	//网卡名称
+	var ifname_device string
 	for _, detail := range parsedData {
 		if detail.HardwareAddress == newMacAddr {
-			fmt.Printf("MAC 地址 %s 对应的网卡名称是 %s\n", newMacAddr, detail.Name)
-			notesTest.Add(jsonutils.NewString(detail.Name), "detail.Name")
+			ifname_device = detail.Name
+			fmt.Printf("MAC 地址 %s 对应的网卡名称是 %s\n", newMacAddr, ifname_device)
+			notesTest.Add(jsonutils.NewString(ifname_device), "ifname_device")
 		}
 	}
 
@@ -2458,12 +2460,25 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	if self.Hypervisor == api.HYPERVISOR_KVM && restartNetwork && (self.Status == api.VM_RUNNING || self.Status == api.VM_BLOCK_STREAM) {
 		taskData.Set("restart_network", jsonutils.JSONTrue)
 		taskData.Set("prev_ip", jsonutils.NewString(gn.IpAddr))
+		taskData.Set("ifname_device", jsonutils.NewString(ifname_device))
+		taskData.Set("ip_mask", jsonutils.NewString(Ip_mask))
+		taskData.Set("gateway", jsonutils.NewString(newGateway))
+
 		if self.Status == api.VM_BLOCK_STREAM {
 			taskData.Set("in_block_stream", jsonutils.JSONTrue)
 		}
 		self.SetStatus(userCred, api.VM_RESTART_NETWORK, "restart network")
 	}
 	return nil, self.startSyncTask(ctx, userCred, true, "", taskData)
+}
+
+func (self *SGuest) PerformSetNetwork(ctx context.Context, userCred mcclient.TokenCredential, device string, ipMask string, gateway string) (jsonutils.JSONObject, error) {
+	inputQgaNet := &api.ServerQgaSetNetwork{
+		Device:  device,
+		Ipmask:  ipMask,
+		Gateway: gateway,
+	}
+	return self.PerformQgaSetNetwork(ctx, userCred, nil, inputQgaNet)
 }
 
 func (self *SGuest) PerformDetachnetwork(ctx context.Context, userCred mcclient.TokenCredential, query jsonutils.JSONObject, input api.ServerDetachnetworkInput) (jsonutils.JSONObject, error) {

@@ -63,13 +63,17 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 			return
 		}
 		prevIp, err := self.Params.GetString("prev_ip")
+		ifnameDevice, err := self.Params.GetString("ifname_device")
+		ipMask, err := self.Params.GetString("ip_mask")
+		gateway, err := self.Params.GetString("gateway")
 		if err != nil {
 			log.Errorf("unable to get prev_ip when restart_network is true when sync guest")
 			self.SetStageComplete(ctx, nil)
-			//TODO qgasetNetwork
 			return
 		}
-		if inBlockStream := jsonutils.QueryBoolean(self.Params, "in_block_stream", false); inBlockStream {
+		if guest.Hypervisor == api.HYPERVISOR_KVM && guest.Status == api.VM_RUNNING && guest.QgaStatus == api.QGA_STATUS_AVAILABLE {
+			guest.PerformSetNetwork(ctx, self.UserCred, ifnameDevice, ipMask, gateway)
+		} else if inBlockStream := jsonutils.QueryBoolean(self.Params, "in_block_stream", false); inBlockStream {
 			guest.StartRestartNetworkTask(ctx, self.UserCred, "", prevIp, true)
 		} else {
 			guest.StartRestartNetworkTask(ctx, self.UserCred, "", prevIp, false)
