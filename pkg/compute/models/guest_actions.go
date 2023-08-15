@@ -2375,7 +2375,7 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	}
 
 	// log test
-	ngnJSON := jsonutils.Marshal(ngn)
+	ngnJSON := jsonutils.Marshal(ngn[0])
 	notesTest.Add(jsonutils.NewString(ngnJSON.String()), "ngn")
 
 	//需要将上述转为jsonobject类型
