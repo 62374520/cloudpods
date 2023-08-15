@@ -2418,6 +2418,7 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	}
 	notesTest.Add(jsonutils.NewString(ngnJSONObject.String()), "ngn")
 
+	//需要将上述转为jsonobject类型
 	newIpAddr, _ := ngnJSONObject.GetString("IpAddr")
 	newMacAddr, _ := ngnJSONObject.GetString("MacAddr")
 	newIndex, _ := ngnJSONObject.Int("Index")
@@ -2436,6 +2437,21 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 		fmt.Println("Error:", err)
 	}
 	notesTest.Add(jsonutils.NewString(newNetworkJSONObject.String()), "newNetwork")
+
+	netwrokJsonDesc := newNetwork.getJsonDesc()
+	// log test
+	netwrokJsonDescJSON, err := json.Marshal(netwrokJsonDesc)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	// 将 JSON 字节数组转换为字符串
+	netwrokJsonDescString := string(netwrokJsonDescJSON)
+	// 使用 jsonutils.ParseString 创建 jsonutils.JSONObject 对象
+	netwrokJsonDescJSONObject, err := jsonutils.ParseString(netwrokJsonDescString)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	notesTest.Add(jsonutils.NewString(netwrokJsonDescJSONObject.String()), "netwrokJsonDesc")
 
 	//日志记录，gn为之前的网络 添加日志
 	notes := jsonutils.NewDict()
