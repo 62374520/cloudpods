@@ -17,6 +17,7 @@ package models
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -2400,8 +2401,8 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	IpAndMask := fmt.Sprintf("%s/%s", needIpAddr, needMaskLen)
 	fmt.Println(needMacAddr, needGateway, IpAndMask)
 
-	ifnameDetail, err := self.PerformQgaGetNetwork(ctx, userCred, query, nil)
-	notesTest.Add(jsonutils.NewString(ifnameDetail.String()), "ifnameDetail")
+	ifnameData, err := self.PerformQgaGetNetwork(ctx, userCred, query, nil)
+	notesTest.Add(jsonutils.NewString(ifnameData.String()), "ifnameData")
 	notesTest.Add(jsonutils.NewString(IpAndMask), "IpAndMask")
 	notesTest.Add(jsonutils.NewString(needMacAddr), "needMacAddr")
 
@@ -2411,7 +2412,7 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 		Prefix        int    `json:"prefix"`
 	}
 
-	type IfnameDetailStruct struct {
+	type IfnameDetail struct {
 		HardwareAddress string      `json:"hardware-address"`
 		IPAddresses     []IPAddress `json:"ip-addresses"`
 		Name            string      `json:"name"`
@@ -2427,10 +2428,11 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 		} `json:"statistics"`
 	}
 
-	type parsedDataStruct []*IfnameDetailStruct
-	parsedData := parsedDataStruct{}
-	err = ifnameDetail.Unmarshal(&parsedData)
-	notesTest.Add(jsonutils.NewString(err.Error()), "err")
+	var parsedData []IfnameDetail
+	if err := json.Unmarshal([]byte(ifnameData.String()), &parsedData); err != nil {
+		fmt.Println("Error parsing JSON:", err)
+		notesTest.Add(jsonutils.NewString(err.Error()), "err")
+	}
 
 	for _, detail := range parsedData {
 		if detail.HardwareAddress == needMacAddr {
