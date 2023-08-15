@@ -92,7 +92,13 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 			logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, ifnameDevice, self.UserCred, false)
 			logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, ipMask, self.UserCred, false)
 			logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, gateway, self.UserCred, false)
-			guest.PerformSetNetwork(ctx, self.UserCred, ifnameDevice, ipMask, gateway)
+			guest.UpdateQgaStatus(api.QGA_STATUS_EXCUTING)
+			_, err := guest.PerformSetNetwork(ctx, self.UserCred, ifnameDevice, ipMask, gateway)
+			if err != nil {
+				logclient.AddActionLogWithStartable(self, guest, logclient.ACT_RESTART_NETWORK, err, self.UserCred, false)
+			}
+			guest.SetStatus(self.UserCred, api.VM_RUNNING, "on qga set network success")
+			guest.UpdateQgaStatus(api.QGA_STATUS_AVAILABLE)
 		} else if inBlockStream := jsonutils.QueryBoolean(self.Params, "in_block_stream", false); inBlockStream {
 			guest.StartRestartNetworkTask(ctx, self.UserCred, "", prevIp, true)
 		} else {
