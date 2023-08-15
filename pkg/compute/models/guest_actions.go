@@ -2257,9 +2257,6 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 
 	//log test
 	notesTest := jsonutils.NewDict()
-	notesTest.Add(jsonutils.NewString(ipStr), "ip_addr")
-	notesTest.Add(jsonutils.NewString(macStr), "mac")
-	notesTest.Add(jsonutils.NewInt(index), "index")
 
 	//按顺序，根据ip地址、mac地址和索引查找虚拟机的网络对象,gn表示之前的网络配置
 	gn, err := self.findGuestnetworkByInfo(ipStr, macStr, index)
@@ -2282,10 +2279,6 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 		return nil, err
 	}
 
-	// log test
-	confJSON := jsonutils.Marshal(conf)
-	notesTest.Add(jsonutils.NewString(confJSON.String()), "conf1")
-
 	if conf.BwLimit == 0 {
 		conf.BwLimit = gn.BwLimit
 	}
@@ -2297,10 +2290,6 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	if err != nil {
 		return nil, err
 	}
-
-	// log test
-	confJSON2 := jsonutils.Marshal(conf)
-	notesTest.Add(jsonutils.NewString(confJSON2.String()), "conf2")
 
 	//地址的有效性、带宽限制、网络类型等。它会根据不同的情况返回相应的验证错误
 	err = isValidNetworkInfo(ctx, userCred, conf, self.getReuseAddr(gn))
@@ -2379,13 +2368,13 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	notesTest.Add(jsonutils.NewString(ngnJSON.String()), "ngn")
 
 	//需要将上述转为jsonobject类型
-	newIpAddr, _ := ngnJSON.GetString("ip_addr")
-	newMacAddr, _ := ngnJSON.GetString("mac_addr")
-	newIndex, _ := ngnJSON.Int("index")
+	//newIpAddr, _ := ngnJSON.GetString("ip_addr")
+	//newMacAddr, _ := ngnJSON.GetString("mac_addr")
+	//newIndex, _ := ngnJSON.Int("index")
 	//newNetwork, err := self.findGuestnetworkByInfo(newIpAddr, newMacAddr, newIndex)
-	notesTest.Add(jsonutils.NewString(newIpAddr), "newIpAddr")
-	notesTest.Add(jsonutils.NewString(newMacAddr), "newMacAddr")
-	notesTest.Add(jsonutils.NewInt(newIndex), "newIndex")
+	//notesTest.Add(jsonutils.NewString(newIpAddr), "newIpAddr")
+	//notesTest.Add(jsonutils.NewString(newMacAddr), "newMacAddr")
+	//notesTest.Add(jsonutils.NewInt(newIndex), "newIndex")
 
 	// log test
 	//newNetworkJSON := jsonutils.Marshal(newNetwork)
@@ -2397,15 +2386,15 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	networkJsonDescJSONObject := jsonutils.Marshal(networkJsonDesc)
 	notesTest.Add(jsonutils.NewString(networkJsonDescJSONObject.String()), "networkJsonDescJSONObject")
 
-	needIpAddr, _ := networkJsonDescJSONObject.GetString("ip")
-	needMacAddr, _ := networkJsonDescJSONObject.GetString("mac")
-	needMaskLen, _ := networkJsonDescJSONObject.GetString("masklen")
-	needGateway, _ := networkJsonDescJSONObject.GetString("gateway")
-	IpAndMask := fmt.Sprintf("%s/%s", needIpAddr, needMaskLen)
-	notesTest.Add(jsonutils.NewString(needIpAddr), "needIpAddr")
-	notesTest.Add(jsonutils.NewString(needMacAddr), "needMacAddr")
-	notesTest.Add(jsonutils.NewString(needMaskLen), "needMaskLen")
-	notesTest.Add(jsonutils.NewString(needGateway), "needGateway")
+	newIpAddr, _ := networkJsonDescJSONObject.GetString("ip")
+	newMacAddr, _ := networkJsonDescJSONObject.GetString("mac")
+	newMaskLen, _ := networkJsonDescJSONObject.GetString("masklen")
+	newGateway, _ := networkJsonDescJSONObject.GetString("gateway")
+	IpAndMask := fmt.Sprintf("%s/%s", newIpAddr, newMaskLen)
+	notesTest.Add(jsonutils.NewString(newIpAddr), "newIpAddr")
+	notesTest.Add(jsonutils.NewString(newMacAddr), "newMacAddr")
+	notesTest.Add(jsonutils.NewString(newMaskLen), "newMaskLen")
+	notesTest.Add(jsonutils.NewString(newGateway), "newGateway")
 	notesTest.Add(jsonutils.NewString(IpAndMask), "IpAndMask")
 
 	ifnameData, err := self.PerformQgaGetNetwork(ctx, userCred, query, nil)
@@ -2440,8 +2429,8 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	}
 
 	for _, detail := range parsedData {
-		if detail.HardwareAddress == needMacAddr {
-			fmt.Printf("MAC 地址 %s 对应的网卡名称是 %s\n", needMacAddr, detail.Name)
+		if detail.HardwareAddress == newMacAddr {
+			fmt.Printf("MAC 地址 %s 对应的网卡名称是 %s\n", newMacAddr, detail.Name)
 			notesTest.Add(jsonutils.NewString(detail.Name), "detail.Name")
 		}
 	}
