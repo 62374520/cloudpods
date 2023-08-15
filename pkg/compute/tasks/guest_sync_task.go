@@ -58,15 +58,8 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 
 	if fwOnly, _ := self.GetParams().Bool("fw_only"); fwOnly {
 		db.OpsLog.LogEvent(guest, db.ACT_SYNC_CONF, nil, self.UserCred)
-		ifnameDevice, err := self.Params.GetString("ifname_device")
-		ipMask, err := self.Params.GetString("ip_mask")
-		gateway, err := self.Params.GetString("gateway")
-		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, ifnameDevice, self.UserCred, false)
-		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, ipMask, self.UserCred, false)
-		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, gateway, self.UserCred, false)
 		if restart, _ := self.Params.Bool("restart_network"); !restart {
 			self.SetStageComplete(ctx, nil)
-			guest.PerformSetNetwork(ctx, self.UserCred, ifnameDevice, ipMask, gateway)
 			return
 		}
 		prevIp, err := self.Params.GetString("prev_ip")
@@ -75,7 +68,28 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 			self.SetStageComplete(ctx, nil)
 			return
 		}
+		ifnameDevice, err := self.Params.GetString("ifname_device")
+		if err != nil {
+			log.Errorf("unable to get ifname_device when restart_network is true when sync guest")
+			self.SetStageComplete(ctx, nil)
+			return
+		}
+		ipMask, err := self.Params.GetString("ip_mask")
+		if err != nil {
+			log.Errorf("unable to get ip_mask when restart_network is true when sync guest")
+			self.SetStageComplete(ctx, nil)
+			return
+		}
+		gateway, err := self.Params.GetString("gateway")
+		if err != nil {
+			log.Errorf("unable to get gateway when restart_network is true when sync guest")
+			self.SetStageComplete(ctx, nil)
+			return
+		}
 		if guest.Hypervisor == api.HYPERVISOR_KVM && guest.Status == api.VM_RUNNING && guest.QgaStatus == api.QGA_STATUS_AVAILABLE {
+			logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, ifnameDevice, self.UserCred, false)
+			logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, ipMask, self.UserCred, false)
+			logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, gateway, self.UserCred, false)
 			guest.PerformSetNetwork(ctx, self.UserCred, ifnameDevice, ipMask, gateway)
 		} else if inBlockStream := jsonutils.QueryBoolean(self.Params, "in_block_stream", false); inBlockStream {
 			guest.StartRestartNetworkTask(ctx, self.UserCred, "", prevIp, true)
