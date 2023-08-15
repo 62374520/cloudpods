@@ -2478,6 +2478,14 @@ func (self *SGuest) PerformSetNetwork(ctx context.Context, userCred mcclient.Tok
 		Ipmask:  ipMask,
 		Gateway: gateway,
 	}
+
+	// log test
+	notesTest2 := jsonutils.NewDict()
+	notesTest2.Add(jsonutils.NewString(inputQgaNet.Device), "Device")
+	notesTest2.Add(jsonutils.NewString(inputQgaNet.Ipmask), "Ipmask")
+	notesTest2.Add(jsonutils.NewString(inputQgaNet.Gateway), "Gateway")
+	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_ADDTAG, notesTest2, userCred, true)
+
 	return self.PerformQgaSetNetwork(ctx, userCred, nil, inputQgaNet)
 }
 
