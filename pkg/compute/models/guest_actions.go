@@ -2383,6 +2383,9 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	newMacAddr, _ := ngnJSON.GetString("mac_addr")
 	newIndex, _ := ngnJSON.Int("index")
 	newNetwork, err := self.findGuestnetworkByInfo(newIpAddr, newMacAddr, newIndex)
+	notesTest.Add(jsonutils.NewString(newIpAddr), "newIpAddr")
+	notesTest.Add(jsonutils.NewString(newMacAddr), "newMacAddr")
+	notesTest.Add(jsonutils.NewInt(newIndex), "newIndex")
 
 	// log test
 	newNetworkJSON := jsonutils.Marshal(newNetwork)
@@ -2399,12 +2402,14 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	needMaskLen, _ := networkJsonDescJSONObject.GetString("masklen")
 	needGateway, _ := networkJsonDescJSONObject.GetString("gateway")
 	IpAndMask := fmt.Sprintf("%s/%s", needIpAddr, needMaskLen)
-	fmt.Println(needMacAddr, needGateway, IpAndMask)
+	notesTest.Add(jsonutils.NewString(needIpAddr), "needIpAddr")
+	notesTest.Add(jsonutils.NewString(needMacAddr), "needMacAddr")
+	notesTest.Add(jsonutils.NewString(needMaskLen), "needMaskLen")
+	notesTest.Add(jsonutils.NewString(needGateway), "needGateway")
+	notesTest.Add(jsonutils.NewString(IpAndMask), "IpAndMask")
 
 	ifnameData, err := self.PerformQgaGetNetwork(ctx, userCred, query, nil)
 	notesTest.Add(jsonutils.NewString(ifnameData.String()), "ifnameData")
-	notesTest.Add(jsonutils.NewString(IpAndMask), "IpAndMask")
-	notesTest.Add(jsonutils.NewString(needMacAddr), "needMacAddr")
 
 	type IPAddress struct {
 		IPAddress     string `json:"ip-address"`
