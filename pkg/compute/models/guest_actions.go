@@ -2438,20 +2438,31 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	}
 	notesTest.Add(jsonutils.NewString(newNetworkJSONObject.String()), "newNetwork")
 
-	netwrokJsonDesc := newNetwork.getJsonDesc()
+	//获取网卡的详细描述，里面有gateway和masklen
+	networkJsonDesc := newNetwork.getJsonDesc()
 	// log test
-	netwrokJsonDescJSON, err := json.Marshal(netwrokJsonDesc)
+	networkJsonDescJSON, err := json.Marshal(networkJsonDesc)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
 	// 将 JSON 字节数组转换为字符串
-	netwrokJsonDescString := string(netwrokJsonDescJSON)
+	networkJsonDescString := string(networkJsonDescJSON)
 	// 使用 jsonutils.ParseString 创建 jsonutils.JSONObject 对象
-	netwrokJsonDescJSONObject, err := jsonutils.ParseString(netwrokJsonDescString)
+	networkJsonDescJSONObject, err := jsonutils.ParseString(networkJsonDescString)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
-	notesTest.Add(jsonutils.NewString(netwrokJsonDescJSONObject.String()), "netwrokJsonDesc")
+	notesTest.Add(jsonutils.NewString(networkJsonDescJSONObject.String()), "networkJsonDesc")
+
+	needIpAddr, _ := networkJsonDescJSONObject.GetString("ip")
+	needMacAddr, _ := networkJsonDescJSONObject.GetString("mac")
+	needMaskLen, _ := networkJsonDescJSONObject.GetString("masklen")
+	needGateway, _ := networkJsonDescJSONObject.GetString("gateway")
+	IpAndMask, _ := fmt.Printf("%s/%s", needIpAddr, needMaskLen)
+	fmt.Println(needMacAddr, needGateway, IpAndMask)
+
+	ifnameDetail, err := self.PerformQgaGetNetwork(ctx, userCred, query, nil)
+	notesTest.Add(jsonutils.NewString(ifnameDetail.String()), "ifnameDetail")
 
 	//日志记录，gn为之前的网络 添加日志
 	notes := jsonutils.NewDict()
