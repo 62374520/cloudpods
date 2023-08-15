@@ -92,19 +92,6 @@ func (m *SGuestManager) QgaGuestInfoTask(sid string) (string, error) {
 		if err != nil {
 			return "", errors.Wrap(err, "qga guest info task")
 		}
-		//// 打开或创建文件,似乎是加密过的
-		//file, err := os.Create("/tmp/guestinfoGuestAgent.txt")
-		//if err != nil {
-		//	fmt.Println("无法打开或创建文件：", err)
-		//}
-		//defer file.Close() // 保证在程序结束时关闭文件
-		//
-		//var data []byte
-		//data, err = json.Marshal(res)
-		//_, err = file.Write(data)
-		//if err != nil {
-		//	fmt.Println("写入文件失败：", err)
-		//}
 		return string(res), nil
 	}
 	return "", errors.Errorf("qga unfinished last cmd, is qga unavailable?")
@@ -126,6 +113,7 @@ func (m *SGuestManager) QgaSetNetwork(netmod *monitor.NetworkModify, sid string,
 		res, err = guest.guestAgent.QgaSetNetwork(netmod)
 		if err != nil {
 			err = errors.Wrapf(err, "modify %s network failed", netmod.Device)
+			return "", err
 		}
 		return string(res), nil
 	}
@@ -142,7 +130,7 @@ func (m *SGuestManager) QgaGetNetwork(sid string) (string, error) {
 		defer guest.guestAgent.Unlock()
 		res, err = guest.guestAgent.QgaGetNetwork()
 		if err != nil {
-			return "", errors.Wrap(err, "qga guest info task")
+			return "", errors.Wrap(err, "qga get network fail")
 		}
 		return string(res), nil
 	}
@@ -166,19 +154,6 @@ func (m *SGuestManager) QgaCommand(cmd *monitor.Command, sid string, execTimeout
 		if err != nil {
 			err = errors.Wrapf(err, "exec qga command %s", cmd.Execute)
 		}
-		//// 打开或创建文件似乎是加密过的
-		//file, err := os.Create("/tmp/commandGuestAgent.txt")
-		//if err != nil {
-		//	fmt.Println("无法打开或创建文件：", err)
-		//}
-		//defer file.Close() // 保证在程序结束时关闭文件
-		//
-		//var data []byte
-		//data, err = json.Marshal(res)
-		//_, err = file.Write(data)
-		//if err != nil {
-		//	fmt.Println("写入文件失败：", err)
-		//}
 	} else {
 		err = errors.Errorf("qga unfinished last cmd, is qga unavailable?")
 	}
