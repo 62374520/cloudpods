@@ -333,8 +333,9 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 			return nil, err
 		}
 		//networkCmd := "echo 111>C:/1.txt"
-		networkCmd := fmt.Sprintf("netsh interface ip set address name=\"%s\" source=static addr=%s mask=%s gateway=%s",
-			qgaNetMod.Device, ip, subnetMask, qgaNetMod.Gateway)
+		networkCmd := fmt.Sprintf("netsh interface ip set address name=\"%s\" source=static addr=%s mask=%s gateway=%s && "+
+			"netsh interface ip set address name=\"%s\" dhcp",
+			qgaNetMod.Device, ip, subnetMask, qgaNetMod.Gateway, qgaNetMod.Device)
 
 		//打开或创建文件
 		qgaWinTest := "/tmp/qgaWinTest.txt"
