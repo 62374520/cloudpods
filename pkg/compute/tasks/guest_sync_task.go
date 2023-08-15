@@ -52,10 +52,6 @@ func (self *GuestSyncConfTask) OnInit(ctx context.Context, obj db.IStandaloneMod
 func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStandaloneModel, data jsonutils.JSONObject) {
 	guest := obj.(*models.SGuest)
 
-	//添加日志 log test
-	//logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, data, self.UserCred, false)
-	//logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, self.Params, self.UserCred, false)
-
 	if fwOnly, _ := self.GetParams().Bool("fw_only"); fwOnly {
 		db.OpsLog.LogEvent(guest, db.ACT_SYNC_CONF, nil, self.UserCred)
 		if restart, _ := self.Params.Bool("restart_network"); !restart {
@@ -86,6 +82,12 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 			self.SetStageComplete(ctx, nil)
 			return
 		}
+		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, guest.Hypervisor, self.UserCred, false)
+		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, api.HYPERVISOR_KVM, self.UserCred, false)
+		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, guest.Status, self.UserCred, false)
+		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, api.VM_RUNNING, self.UserCred, false)
+		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, guest.QgaStatus, self.UserCred, false)
+		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, api.QGA_STATUS_AVAILABLE, self.UserCred, false)
 		if guest.Hypervisor == api.HYPERVISOR_KVM && guest.Status == api.VM_RUNNING && guest.QgaStatus == api.QGA_STATUS_AVAILABLE {
 			logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, ifnameDevice, self.UserCred, false)
 			logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, ipMask, self.UserCred, false)
