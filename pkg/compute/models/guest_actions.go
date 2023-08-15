@@ -2379,9 +2379,9 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	notesTest.Add(jsonutils.NewString(ngnJSON.String()), "ngn")
 
 	//需要将上述转为jsonobject类型
-	newIpAddr, _ := ngnJSON.GetString("IpAddr")
-	newMacAddr, _ := ngnJSON.GetString("MacAddr")
-	newIndex, _ := ngnJSON.Int("Index")
+	newIpAddr, _ := ngnJSON.GetString("ip_addr")
+	newMacAddr, _ := ngnJSON.GetString("mac_addr")
+	newIndex, _ := ngnJSON.Int("index")
 	newNetwork, err := self.findGuestnetworkByInfo(newIpAddr, newMacAddr, newIndex)
 
 	// log test
@@ -2392,7 +2392,7 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	networkJsonDesc := newNetwork.getJsonDesc()
 	// log test
 	networkJsonDescJSONObject := jsonutils.Marshal(networkJsonDesc)
-	notesTest.Add(jsonutils.NewString(networkJsonDescJSONObject.String()), "networkJsonDesc")
+	notesTest.Add(jsonutils.NewString(networkJsonDescJSONObject.String()), "networkJsonDescJSONObject")
 
 	needIpAddr, _ := networkJsonDescJSONObject.GetString("ip")
 	needMacAddr, _ := networkJsonDescJSONObject.GetString("mac")
