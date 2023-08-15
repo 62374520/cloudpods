@@ -2429,7 +2429,7 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	}
 
 	var parsedData struct {
-		IfnameDetails []IfnameDetailStruct `json:"ifnameDetail"`
+		IfnameDetails []IfnameDetailStruct `json:"ifnameDetails"`
 	}
 	//err = ifnameDetail.Unmarshal(&parsedData)
 	if err := json.Unmarshal([]byte(ifnameDetail.String()), &parsedData); err != nil {
