@@ -2457,12 +2457,12 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	restartNetwork, _ := data.Bool("restart_network")
 
 	taskData := jsonutils.NewDict()
+	taskData.Set("ifname_device", jsonutils.NewString(ifname_device))
+	taskData.Set("ip_mask", jsonutils.NewString(Ip_mask))
+	taskData.Set("gateway", jsonutils.NewString(newGateway))
 	if self.Hypervisor == api.HYPERVISOR_KVM && restartNetwork && (self.Status == api.VM_RUNNING || self.Status == api.VM_BLOCK_STREAM) {
 		taskData.Set("restart_network", jsonutils.JSONTrue)
 		taskData.Set("prev_ip", jsonutils.NewString(gn.IpAddr))
-		taskData.Set("ifname_device", jsonutils.NewString(ifname_device))
-		taskData.Set("ip_mask", jsonutils.NewString(Ip_mask))
-		taskData.Set("gateway", jsonutils.NewString(newGateway))
 
 		if self.Status == api.VM_BLOCK_STREAM {
 			taskData.Set("in_block_stream", jsonutils.JSONTrue)

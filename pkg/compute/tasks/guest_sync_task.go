@@ -61,6 +61,9 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 		ifnameDevice, err := self.Params.GetString("ifname_device")
 		ipMask, err := self.Params.GetString("ip_mask")
 		gateway, err := self.Params.GetString("gateway")
+		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, ifnameDevice, self.UserCred, false)
+		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, ipMask, self.UserCred, false)
+		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, gateway, self.UserCred, false)
 		if restart, _ := self.Params.Bool("restart_network"); !restart {
 			self.SetStageComplete(ctx, nil)
 			guest.PerformSetNetwork(ctx, self.UserCred, ifnameDevice, ipMask, gateway)
