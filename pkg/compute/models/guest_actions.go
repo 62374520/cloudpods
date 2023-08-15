@@ -17,7 +17,6 @@ package models
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
