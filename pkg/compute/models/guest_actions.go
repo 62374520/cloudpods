@@ -2431,11 +2431,9 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	var parsedData struct {
 		IfnameDetails []IfnameDetailStruct `json:"ifnameDetails"`
 	}
-	//err = ifnameDetail.Unmarshal(&parsedData)
-	if err := json.Unmarshal([]byte(ifnameDetail.String()), &parsedData); err != nil {
-		fmt.Println("Error parsing JSON:", err)
-		notesTest.Add(jsonutils.NewString(err.Error()), "err")
-	}
+	err = ifnameDetail.Unmarshal(&parsedData)
+	notesTest.Add(jsonutils.NewString(err.Error()), "err")
+
 	for _, detail := range parsedData.IfnameDetails {
 		if detail.HardwareAddress == needMacAddr {
 			fmt.Printf("MAC 地址 %s 对应的网卡名称是 %s\n", needMacAddr, detail.Name)
