@@ -2418,6 +2418,25 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	}
 	notesTest.Add(jsonutils.NewString(ngnJSONObject.String()), "ngn")
 
+	newIpAddr, _ := ngnJSONObject.GetString("IpAddr")
+	newMacAddr, _ := ngnJSONObject.GetString("MacAddr")
+	newIndex, _ := ngnJSONObject.Int("Index")
+	newNetwork, err := self.findGuestnetworkByInfo(newIpAddr, newMacAddr, newIndex)
+
+	// log test
+	newNetworkJSON, err := json.Marshal(newNetwork)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	// 将 JSON 字节数组转换为字符串
+	newNetworkString := string(newNetworkJSON)
+	// 使用 jsonutils.ParseString 创建 jsonutils.JSONObject 对象
+	newNetworkJSONObject, err := jsonutils.ParseString(newNetworkString)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	notesTest.Add(jsonutils.NewString(newNetworkJSONObject.String()), "newNetwork")
+
 	//日志记录，gn为之前的网络 添加日志
 	notes := jsonutils.NewDict()
 	if gn != nil {

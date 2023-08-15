@@ -53,8 +53,8 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 	guest := obj.(*models.SGuest)
 
 	//添加日志 log test
-	//logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, data, self.UserCred, false)
-	//logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, self.Params, self.UserCred, false)
+	logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, data, self.UserCred, false)
+	logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, self.Params, self.UserCred, false)
 
 	if fwOnly, _ := self.GetParams().Bool("fw_only"); fwOnly {
 		db.OpsLog.LogEvent(guest, db.ACT_SYNC_CONF, nil, self.UserCred)
@@ -66,6 +66,7 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 		if err != nil {
 			log.Errorf("unable to get prev_ip when restart_network is true when sync guest")
 			self.SetStageComplete(ctx, nil)
+			//TODO qgasetNetwork
 			return
 		}
 		if inBlockStream := jsonutils.QueryBoolean(self.Params, "in_block_stream", false); inBlockStream {
