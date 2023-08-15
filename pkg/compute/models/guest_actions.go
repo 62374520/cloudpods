@@ -2428,11 +2428,13 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	}
 
 	var parsedData struct {
-		IfnameDetail []IfnameDetailStruct `json:"ifnameDetail"`
+		IfnameDetails []IfnameDetailStruct `json:"ifnameDetail"`
 	}
 	err = ifnameDetail.Unmarshal(parsedData)
 
-	for _, detail := range parsedData.IfnameDetail {
+	for _, detail := range parsedData.IfnameDetails {
+		notesTest.Add(jsonutils.NewString(detail.HardwareAddress), detail.HardwareAddress)
+		notesTest.Add(jsonutils.NewString(detail.Name), detail.Name)
 		if detail.HardwareAddress == needMacAddr {
 			notesTest.Add(jsonutils.NewString(detail.Name), "detail.Name")
 		}
