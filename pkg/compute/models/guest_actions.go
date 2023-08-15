@@ -2382,17 +2382,17 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	newIpAddr, _ := ngnJSON.GetString("ip_addr")
 	newMacAddr, _ := ngnJSON.GetString("mac_addr")
 	newIndex, _ := ngnJSON.Int("index")
-	newNetwork, err := self.findGuestnetworkByInfo(newIpAddr, newMacAddr, newIndex)
+	//newNetwork, err := self.findGuestnetworkByInfo(newIpAddr, newMacAddr, newIndex)
 	notesTest.Add(jsonutils.NewString(newIpAddr), "newIpAddr")
 	notesTest.Add(jsonutils.NewString(newMacAddr), "newMacAddr")
 	notesTest.Add(jsonutils.NewInt(newIndex), "newIndex")
 
 	// log test
-	newNetworkJSON := jsonutils.Marshal(newNetwork)
-	notesTest.Add(jsonutils.NewString(newNetworkJSON.String()), "newNetwork")
+	//newNetworkJSON := jsonutils.Marshal(newNetwork)
+	//notesTest.Add(jsonutils.NewString(newNetworkJSON.String()), "newNetwork")
 
 	//获取网卡的详细描述，里面有gateway和masklen
-	networkJsonDesc := newNetwork.getJsonDesc()
+	networkJsonDesc := ngn[0].getJsonDesc()
 	// log test
 	networkJsonDescJSONObject := jsonutils.Marshal(networkJsonDesc)
 	notesTest.Add(jsonutils.NewString(networkJsonDescJSONObject.String()), "networkJsonDescJSONObject")
