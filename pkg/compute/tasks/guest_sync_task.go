@@ -82,12 +82,12 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 			self.SetStageComplete(ctx, nil)
 			return
 		}
-		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, guest.Hypervisor, self.UserCred, false)
-		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, api.HYPERVISOR_KVM, self.UserCred, false)
-		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, guest.Status, self.UserCred, false)
-		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, api.VM_RUNNING, self.UserCred, false)
-		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, guest.QgaStatus, self.UserCred, false)
-		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, api.QGA_STATUS_AVAILABLE, self.UserCred, false)
+		//logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, guest.Hypervisor, self.UserCred, false)
+		//logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, api.HYPERVISOR_KVM, self.UserCred, false)
+		//logclient.AddActionLogWithStartable(self, guest, logclient.ACT_RESTART_NETWORK, guest.Status, self.UserCred, false)
+		//logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, api.VM_RESTART_NETWORK, self.UserCred, false)
+		//logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, guest.QgaStatus, self.UserCred, false)
+		//logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, api.QGA_STATUS_AVAILABLE, self.UserCred, false)
 		if guest.Hypervisor == api.HYPERVISOR_KVM && guest.Status == api.VM_RESTART_NETWORK && guest.QgaStatus != api.QGA_STATUS_EXCUTING {
 			logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, ifnameDevice, self.UserCred, false)
 			logclient.AddActionLogWithStartable(self, guest, logclient.ACT_VM_SYNC_CONF, ipMask, self.UserCred, false)

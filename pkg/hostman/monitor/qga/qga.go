@@ -149,52 +149,32 @@ func (qga *QemuGuestAgent) GuestInfoTask() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	//// 打开或创建文件
-	//file, err := os.Create("/tmp/guestinfoQga.txt")
-	//if err != nil {
-	//	fmt.Println("无法打开或创建文件：", err)
-	//}
-	//defer file.Close() // 保证在程序结束时关闭文件
-	//
-	//var data []byte
-	//data, err = json.Marshal(*res)
-	//_, err = file.Write(data)
-	//if err != nil {
-	//	fmt.Println("写入文件失败：", err)
-	//}
-
 	return *res, nil
+}
 
-	//cmd := &monitor.Command{
-	//	Execute: "guest-info",
-	//}
-	//
-	//res, err := qga.execCmd(cmd, true, -1)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//return *res, nil
+type IPAddress struct {
+	IPAddress     string `json:"ip-address"`
+	IPAddressType string `json:"ip-address-type"`
+	Prefix        int    `json:"prefix"`
+}
+
+type IfnameDetail struct {
+	HardwareAddress string      `json:"hardware-address"`
+	IPAddresses     []IPAddress `json:"ip-addresses"`
+	Name            string      `json:"name"`
+	Statistics      struct {
+		RxBytes   int `json:"rx-bytes"`
+		RxDropped int `json:"rx-dropped"`
+		RxErrs    int `json:"rx-errs"`
+		RxPackets int `json:"rx-packets"`
+		TxBytes   int `json:"tx-bytes"`
+		TxDropped int `json:"tx-dropped"`
+		TxErrs    int `json:"tx-errs"`
+		TxPackets int `json:"tx-packets"`
+	} `json:"statistics"`
 }
 
 func (qga *QemuGuestAgent) QgaGetNetwork() ([]byte, error) {
-	//fileFileOpenPath := "/tmp/testFileOpen.sh"
-	////执行shell脚本
-	//cmdExecShell := &monitor.Command{
-	//	Execute: "guest-exec",
-	//	Args: map[string]interface{}{
-	//		"path":           fileFileOpenPath,
-	//		"arg":            []string{},
-	//		"env":            []string{},
-	//		"input-data":     "",
-	//		"capture-output": true,
-	//	},
-	//}
-	//resExec, err := qga.execCmd(cmdExecShell, true, -1)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//return *resExec, nil
-
 	cmd := &monitor.Command{
 		Execute: "guest-network-get-interfaces",
 	}

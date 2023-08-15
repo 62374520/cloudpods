@@ -851,7 +851,7 @@ func qgaGetNetwork(ctx context.Context, userCred mcclient.TokenCredential, sid s
 
 func qgaSetNetwork(ctx context.Context, userCred mcclient.TokenCredential, sid string, body jsonutils.JSONObject) (interface{}, error) {
 	gm := guestman.GetGuestManager()
-	input := computeapi.ServerQgaSetNetwork{}
+	input := computeapi.ServerQgaSetNetworkInput{}
 	err := body.Unmarshal(&input)
 	if err != nil {
 		return nil, httperrors.NewInputParameterError("unmarshal input to ServerQgaSetNetworkInput: %s", err.Error())

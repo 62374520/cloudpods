@@ -28,6 +28,7 @@ import (
 	"yunion.io/x/cloudmux/pkg/cloudprovider"
 	"yunion.io/x/jsonutils"
 	"yunion.io/x/log"
+	"yunion.io/x/onecloud/pkg/hostman/monitor/qga"
 	"yunion.io/x/pkg/errors"
 	"yunion.io/x/pkg/tristate"
 	"yunion.io/x/pkg/util/billing"
@@ -2254,18 +2255,11 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	macStr, _ := data.GetString("mac")
 	index, _ := data.Int("index")
 
-	//log test
-	notesTest := jsonutils.NewDict()
-
 	//按顺序，根据ip地址、mac地址和索引查找虚拟机的网络对象,gn表示之前的网络配置
 	gn, err := self.findGuestnetworkByInfo(ipStr, macStr, index)
 	if err != nil {
 		return nil, err
 	}
-
-	// log test
-	gnJSON := jsonutils.Marshal(gn)
-	notesTest.Add(jsonutils.NewString(gnJSON.String()), "gn")
 
 	//获取数据中的网络描述
 	netDesc, err := data.Get("net_desc")
@@ -2362,78 +2356,34 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 		return nil, err
 	}
 
-	// log test
-	ngnJSON := jsonutils.Marshal(ngn[0])
-	notesTest.Add(jsonutils.NewString(ngnJSON.String()), "ngn")
-
-	//需要将上述转为jsonobject类型
-	//newIpAddr, _ := ngnJSON.GetString("ip_addr")
-	//newMacAddr, _ := ngnJSON.GetString("mac_addr")
-	//newIndex, _ := ngnJSON.Int("index")
-	//newNetwork, err := self.findGuestnetworkByInfo(newIpAddr, newMacAddr, newIndex)
-	//notesTest.Add(jsonutils.NewString(newIpAddr), "newIpAddr")
-	//notesTest.Add(jsonutils.NewString(newMacAddr), "newMacAddr")
-	//notesTest.Add(jsonutils.NewInt(newIndex), "newIndex")
-
-	// log test
-	//newNetworkJSON := jsonutils.Marshal(newNetwork)
-	//notesTest.Add(jsonutils.NewString(newNetworkJSON.String()), "newNetwork")
-
 	//获取网卡的详细描述，里面有gateway和masklen
 	networkJsonDesc := ngn[0].getJsonDesc()
 	// log test
 	networkJsonDescJSONObject := jsonutils.Marshal(networkJsonDesc)
-	notesTest.Add(jsonutils.NewString(networkJsonDescJSONObject.String()), "networkJsonDescJSONObject")
 
 	newIpAddr, _ := networkJsonDescJSONObject.GetString("ip")
 	newMacAddr, _ := networkJsonDescJSONObject.GetString("mac")
 	newMaskLen, _ := networkJsonDescJSONObject.GetString("masklen")
 	newGateway, _ := networkJsonDescJSONObject.GetString("gateway")
 	Ip_mask := fmt.Sprintf("%s/%s", newIpAddr, newMaskLen)
-	notesTest.Add(jsonutils.NewString(newIpAddr), "newIpAddr")
-	notesTest.Add(jsonutils.NewString(newMacAddr), "newMacAddr")
-	notesTest.Add(jsonutils.NewString(newMaskLen), "newMaskLen")
-	notesTest.Add(jsonutils.NewString(newGateway), "newGateway")
-	notesTest.Add(jsonutils.NewString(Ip_mask), "Ip_mask")
 
 	ifnameData, err := self.PerformQgaGetNetwork(ctx, userCred, query, nil)
-	notesTest.Add(jsonutils.NewString(ifnameData.String()), "ifnameData")
-
-	type IPAddress struct {
-		IPAddress     string `json:"ip-address"`
-		IPAddressType string `json:"ip-address-type"`
-		Prefix        int    `json:"prefix"`
+	if err != nil {
+		return nil, err
 	}
 
-	type IfnameDetail struct {
-		HardwareAddress string      `json:"hardware-address"`
-		IPAddresses     []IPAddress `json:"ip-addresses"`
-		Name            string      `json:"name"`
-		Statistics      struct {
-			RxBytes   int `json:"rx-bytes"`
-			RxDropped int `json:"rx-dropped"`
-			RxErrs    int `json:"rx-errs"`
-			RxPackets int `json:"rx-packets"`
-			TxBytes   int `json:"tx-bytes"`
-			TxDropped int `json:"tx-dropped"`
-			TxErrs    int `json:"tx-errs"`
-			TxPackets int `json:"tx-packets"`
-		} `json:"statistics"`
-	}
-
-	var parsedData []IfnameDetail
+	//获取网卡的名称
+	var parsedData []qga.IfnameDetail
 	if err := json.Unmarshal([]byte(ifnameData.String()), &parsedData); err != nil {
-		fmt.Println("Error parsing JSON:", err)
-		notesTest.Add(jsonutils.NewString(err.Error()), "err")
+		return nil, err
 	}
 
 	//网卡名称
 	var ifname_device string
 	for _, detail := range parsedData {
 		if detail.HardwareAddress == newMacAddr {
+			//获取网卡
 			ifname_device = detail.Name
-			fmt.Printf("MAC 地址 %s 对应的网卡名称是 %s\n", newMacAddr, ifname_device)
-			notesTest.Add(jsonutils.NewString(ifname_device), "ifname_device")
 		}
 	}
 
@@ -2441,17 +2391,11 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	notes := jsonutils.NewDict()
 	if gn != nil {
 		notes.Add(jsonutils.NewString(gn.IpAddr), "prev_ip")
-
-		//log test
-		notesTest.Add(jsonutils.NewString(data.String()), "data")
 	}
 	if ngn != nil {
 		notes.Add(jsonutils.NewString(ngn[0].IpAddr), "ip")
 	}
 	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_VM_CHANGE_NIC, notes, userCred, true)
-
-	//log test
-	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_ADDTAG, notesTest, userCred, true)
 
 	//检测数据中的重启网卡字段
 	restartNetwork, _ := data.Bool("restart_network")
@@ -2473,18 +2417,19 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 }
 
 func (self *SGuest) PerformSetNetwork(ctx context.Context, userCred mcclient.TokenCredential, device string, ipMask string, gateway string) (jsonutils.JSONObject, error) {
-	inputQgaNet := &api.ServerQgaSetNetwork{
+
+	inputQgaNet := &api.ServerQgaSetNetworkInput{
 		Device:  device,
 		Ipmask:  ipMask,
 		Gateway: gateway,
 	}
 
 	// log test
-	notesTest2 := jsonutils.NewDict()
-	notesTest2.Add(jsonutils.NewString(inputQgaNet.Device), "Device")
-	notesTest2.Add(jsonutils.NewString(inputQgaNet.Ipmask), "Ipmask")
-	notesTest2.Add(jsonutils.NewString(inputQgaNet.Gateway), "Gateway")
-	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_ADDTAG, notesTest2, userCred, true)
+	notesNetwork := jsonutils.NewDict()
+	notesNetwork.Add(jsonutils.NewString(inputQgaNet.Device), "Device")
+	notesNetwork.Add(jsonutils.NewString(inputQgaNet.Ipmask), "Ipmask")
+	notesNetwork.Add(jsonutils.NewString(inputQgaNet.Gateway), "Gateway")
+	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_RESTART_NETWORK, notesNetwork, userCred, true)
 
 	return self.PerformQgaSetNetwork(ctx, userCred, nil, inputQgaNet)
 }
