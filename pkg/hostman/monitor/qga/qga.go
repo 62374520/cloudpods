@@ -335,55 +335,17 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 
 	} else {
 		//网络配置脚本内容
-		//networkCmd := fmt.Sprintf("#!/bin/bash\nset +e\n"+
-		//	"/sbin/ip -4 address flush dev %s\n/sbin/ip -4 address add %s dev %s\n"+
-		//	"/sbin/ip route del default dev %s\n/sbin/ip route add default via %s dev %s\n",
-		//	qgaNetMod.Device, qgaNetMod.Ipmask, qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Gateway, qgaNetMod.Device)
+		networkCmd := fmt.Sprintf("#!/bin/bash\nset +e\n"+
+			"/sbin/ip -4 address flush dev %s\n/sbin/ip -4 address add %s dev %s\n"+
+			"/sbin/ip route del default dev %s\n/sbin/ip route add default via %s dev %s\n",
+			qgaNetMod.Device, qgaNetMod.Ipmask, qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Gateway, qgaNetMod.Device)
 		//networkCmd := fmt.Sprintf("#!/bin/bash\nset +e\n"+
 		//	"/sbin/ip link set dev %s down\n/sbin/ip -4 address flush dev %s\n/sbin/ip link set dev %s up\n",
 		//	qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Device)
-		networkCmd := fmt.Sprintf("/sbin/ip link set dev %s down && /sbin/ip link set dev %s up",
-			qgaNetMod.Device, qgaNetMod.Device)
-
-		arg := []string{"-c", networkCmd}
-		cmdAddAuth := &monitor.Command{
-			Execute: "guest-exec",
-			Args: map[string]interface{}{
-				"path":           "/bin/bash",
-				"arg":            arg,
-				"env":            []string{},
-				"input-data":     "",
-				"capture-output": true,
-			},
-		}
-		resExec, err := qga.execCmd(cmdAddAuth, true, -1)
-		if err != nil {
-			return nil, err
-		}
-		return *resExec, nil
-
-		////文件打开命令
-		//fileFileOpenPath := "/tmp/deviceRestart.sh"
-		//returnFileNum, err := qga.QgaFileOpen(fileFileOpenPath)
-		//if err != nil {
-		//	return nil, err
-		//}
+		//networkCmd := fmt.Sprintf("/sbin/ip link set dev %s down && /sbin/ip link set dev %s up",
+		//	qgaNetMod.Device, qgaNetMod.Device)
 		//
-		////文件写入命令
-		//err = qga.QgaFileWrite(returnFileNum, networkCmd)
-		//if err != nil {
-		//	return nil, err
-		//}
-		//
-		////文件关闭命令
-		//err = qga.QgaFileClose(returnFileNum)
-		//if err != nil {
-		//	return nil, err
-		//}
-		//
-		////给文件执行权限
-		//shellAddAuth := "chmod +x " + fileFileOpenPath
-		//arg := []string{"-c", shellAddAuth}
+		//arg := []string{"-c", networkCmd}
 		//cmdAddAuth := &monitor.Command{
 		//	Execute: "guest-exec",
 		//	Args: map[string]interface{}{
@@ -394,27 +356,65 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 		//		"capture-output": true,
 		//	},
 		//}
-		//_, err = qga.execCmd(cmdAddAuth, true, -1)
-		//if err != nil {
-		//	return nil, err
-		//}
-		//
-		////执行shell脚本
-		//cmdExecShell := &monitor.Command{
-		//	Execute: "guest-exec",
-		//	Args: map[string]interface{}{
-		//		"path":           fileFileOpenPath,
-		//		"arg":            []string{},
-		//		"env":            []string{},
-		//		"input-data":     "",
-		//		"capture-output": true,
-		//	},
-		//}
-		//resExec, err := qga.execCmd(cmdExecShell, true, -1)
+		//resExec, err := qga.execCmd(cmdAddAuth, true, -1)
 		//if err != nil {
 		//	return nil, err
 		//}
 		//return *resExec, nil
+
+		//文件打开命令
+		fileFileOpenPath := "/tmp/deviceRestart.sh"
+		returnFileNum, err := qga.QgaFileOpen(fileFileOpenPath)
+		if err != nil {
+			return nil, err
+		}
+
+		//文件写入命令
+		err = qga.QgaFileWrite(returnFileNum, networkCmd)
+		if err != nil {
+			return nil, err
+		}
+
+		//文件关闭命令
+		err = qga.QgaFileClose(returnFileNum)
+		if err != nil {
+			return nil, err
+		}
+
+		//给文件执行权限
+		shellAddAuth := "chmod +x " + fileFileOpenPath
+		arg := []string{"-c", shellAddAuth}
+		cmdAddAuth := &monitor.Command{
+			Execute: "guest-exec",
+			Args: map[string]interface{}{
+				"path":           "/bin/bash",
+				"arg":            arg,
+				"env":            []string{},
+				"input-data":     "",
+				"capture-output": true,
+			},
+		}
+		_, err = qga.execCmd(cmdAddAuth, true, -1)
+		if err != nil {
+			return nil, err
+		}
+
+		//执行shell脚本
+		cmdExecShell := &monitor.Command{
+			Execute: "guest-exec",
+			Args: map[string]interface{}{
+				"path":           fileFileOpenPath,
+				"arg":            []string{},
+				"env":            []string{},
+				"input-data":     "",
+				"capture-output": true,
+			},
+		}
+		resExec, err := qga.execCmd(cmdExecShell, true, -1)
+		if err != nil {
+			return nil, err
+		}
+		return *resExec, nil
 	}
 
 }
