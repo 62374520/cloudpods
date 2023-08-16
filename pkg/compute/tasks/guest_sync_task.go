@@ -82,12 +82,15 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 			self.SetStageComplete(ctx, nil)
 			return
 		}
+		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_QGA_NETWORK_INPUT, guest.QgaStatus, self.UserCred, false)
 		_, err = guest.PerformQgaStatus(ctx, self.UserCred)
 		if err != nil {
 			guest.UpdateQgaStatus(api.QGA_STATUS_UNKNOWN)
 		} else {
 			guest.UpdateQgaStatus(api.QGA_STATUS_AVAILABLE)
 		}
+		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_QGA_NETWORK_INPUT, err, self.UserCred, false)
+		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_QGA_NETWORK_INPUT, guest.QgaStatus, self.UserCred, false)
 		if guest.Hypervisor == api.HYPERVISOR_KVM && guest.Status == api.VM_RESTART_NETWORK && guest.QgaStatus == api.QGA_STATUS_AVAILABLE {
 			guest.UpdateQgaStatus(api.QGA_STATUS_EXCUTING)
 			ifnameDevice, _ := guest.PerformGetIfname(ctx, self.UserCred, preMac)
