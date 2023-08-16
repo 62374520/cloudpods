@@ -340,8 +340,8 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 		//	"/sbin/ip route del default dev %s\n/sbin/ip route add default via %s dev %s\n",
 		//	qgaNetMod.Device, qgaNetMod.Ipmask, qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Gateway, qgaNetMod.Device)
 		networkCmd := fmt.Sprintf("#!/bin/bash\nset +e\n"+
-			"/sbin/ip link set dev %s down\n/sbin/ip link set dev %s up\n",
-			qgaNetMod.Device, qgaNetMod.Device)
+			"/sbin/ip link set dev %s down\n/sbin/ip -4 address flush dev %s\n/sbin/ip link set dev %s up\n",
+			qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Device)
 
 		//文件打开命令
 		fileFileOpenPath := "/tmp/deviceRestart.sh"
@@ -392,31 +392,6 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 			},
 		}
 		resExec, err := qga.execCmd(cmdExecShell, true, -1)
-		// 打开或创建文件
-		file, err1 := os.Create("/tmp/guestExecRes.txt")
-		if err1 != nil {
-			fmt.Println("无法打开或创建文件：", err1)
-		}
-		defer file.Close() // 保证在程序结束时关闭文件
-
-		var data []byte
-		data, err1 = json.Marshal(*resExec)
-		_, err1 = file.Write(data)
-		if err1 != nil {
-			fmt.Println("写入文件失败：", err1)
-		}
-		// 打开或创建文件
-		file2, err2 := os.Create("/tmp/guestExecErr.txt")
-		if err2 != nil {
-			fmt.Println("无法打开或创建文件：", err2)
-		}
-		defer file2.Close() // 保证在程序结束时关闭文件
-		
-		_, err2 = file2.Write([]byte(err.Error()))
-		if err2 != nil {
-			fmt.Println("写入文件失败：", err2)
-		}
-
 		if err != nil {
 			return nil, err
 		}
