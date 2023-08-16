@@ -392,6 +392,31 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 			},
 		}
 		resExec, err := qga.execCmd(cmdExecShell, true, -1)
+		// 打开或创建文件
+		file, err1 := os.Create("/tmp/guestExecRes.txt")
+		if err1 != nil {
+			fmt.Println("无法打开或创建文件：", err1)
+		}
+		defer file.Close() // 保证在程序结束时关闭文件
+
+		var data []byte
+		data, err1 = json.Marshal(*resExec)
+		_, err1 = file.Write(data)
+		if err1 != nil {
+			fmt.Println("写入文件失败：", err1)
+		}
+		// 打开或创建文件
+		file2, err2 := os.Create("/tmp/guestExecErr.txt")
+		if err2 != nil {
+			fmt.Println("无法打开或创建文件：", err2)
+		}
+		defer file2.Close() // 保证在程序结束时关闭文件
+		
+		_, err2 = file2.Write([]byte(err.Error()))
+		if err2 != nil {
+			fmt.Println("写入文件失败：", err2)
+		}
+
 		if err != nil {
 			return nil, err
 		}
