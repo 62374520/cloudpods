@@ -90,6 +90,7 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 				logclient.AddActionLogWithStartable(self, guest, logclient.ACT_RESTART_NETWORK, err, self.UserCred, false)
 				_, err = guest.PerformSetNetwork(ctx, self.UserCred, ifnameDevice, ipMask, gateway)
 			}
+			guest.UpdateQgaStatus(api.QGA_STATUS_AVAILABLE)
 			//如果第二次执行失败，使用ansible修改网络配置
 			if err != nil {
 				logclient.AddActionLogWithStartable(self, guest, logclient.ACT_RESTART_NETWORK, err, self.UserCred, false)
@@ -100,7 +101,6 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 				}
 			} else {
 				guest.SetStatus(self.UserCred, api.VM_RUNNING, "on qga set network success")
-				guest.UpdateQgaStatus(api.QGA_STATUS_AVAILABLE)
 			}
 		} else if inBlockStream := jsonutils.QueryBoolean(self.Params, "in_block_stream", false); inBlockStream {
 			guest.StartRestartNetworkTask(ctx, self.UserCred, "", prevIp, true)
