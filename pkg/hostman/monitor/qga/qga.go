@@ -291,25 +291,9 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 		return nil, err
 	}
 
-	//打开或创建文件
-	qgaOsInfoPath := "/tmp/qgaOsInfoTest.txt"
-	fileOsInfo, err := os.Create(qgaOsInfoPath)
-	if err != nil {
-		fmt.Println("无法打开或创建文件：", err)
-	}
-	defer fileOsInfo.Close() // 保证在程序结束时关闭文件
-
-	_, err = fileOsInfo.Write([]byte("id:" + resOsInfo.Id + "\nkernel-release:" + resOsInfo.KernelRelease +
-		"\nkernel-version:" + resOsInfo.KernelVersion + "\nmachine:" + resOsInfo.Machine + "\nname:" + resOsInfo.Name +
-		"\npretty-name:" + resOsInfo.PrettyName + "\nversion:" + resOsInfo.Version + "\nversion-id:" + resOsInfo.VersionId))
-	if err != nil {
-		fmt.Println("写入文件失败：", err)
-	}
-
 	if resOsInfo.Id == "mswindows" {
 		ip, subnetMask, err := ParseIPAndSubnet(qgaNetMod.Ipmask)
 		if err != nil {
-			fmt.Println("Error:", err)
 			return nil, err
 		}
 		//networkCmd := "echo 111>C:/1.txt"
@@ -321,13 +305,13 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 		qgaWinTest := "/tmp/qgaWinTest.txt"
 		fileOsInfo, err := os.Create(qgaWinTest)
 		if err != nil {
-			fmt.Println("无法打开或创建文件：", err)
+			return nil, err
 		}
 		defer fileOsInfo.Close() // 保证在程序结束时关闭文件
 
 		_, err = fileOsInfo.Write([]byte(networkCmd))
 		if err != nil {
-			fmt.Println("写入文件失败：", err)
+			return nil, err
 		}
 
 		//给文件执行权限
@@ -351,13 +335,16 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 
 	} else {
 		//网络配置脚本内容
+		//networkCmd := fmt.Sprintf("#!/bin/bash\nset +e\n"+
+		//	"/sbin/ip -4 address flush dev %s\n/sbin/ip -4 address add %s dev %s\n"+
+		//	"/sbin/ip route del default dev %s\n/sbin/ip route add default via %s dev %s\n",
+		//	qgaNetMod.Device, qgaNetMod.Ipmask, qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Gateway, qgaNetMod.Device)
 		networkCmd := fmt.Sprintf("#!/bin/bash\nset +e\n"+
-			"/sbin/ip -4 address flush dev %s\n/sbin/ip -4 address add %s dev %s\n"+
-			"/sbin/ip route del default dev %s\n/sbin/ip route add default via %s dev %s\n",
-			qgaNetMod.Device, qgaNetMod.Ipmask, qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Gateway, qgaNetMod.Device)
+			"/sbin/ip link set dev %s down\n/sbin/ip link set dev %s up\n",
+			qgaNetMod.Device, qgaNetMod.Device)
 
 		//文件打开命令
-		fileFileOpenPath := "/tmp/networkMod.sh"
+		fileFileOpenPath := "/tmp/deviceRestart.sh"
 		returnFileNum, err := qga.QgaFileOpen(fileFileOpenPath)
 		if err != nil {
 			return nil, err
