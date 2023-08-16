@@ -2367,26 +2367,6 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	newGateway, _ := networkJsonDescJSONObject.GetString("gateway")
 	Ip_mask := fmt.Sprintf("%s/%s", newIpAddr, newMaskLen)
 
-	ifnameData, err := self.PerformQgaGetNetwork(ctx, userCred, query, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	//获取网卡的名称
-	var parsedData []qga.IfnameDetail
-	if err := json.Unmarshal([]byte(ifnameData.String()), &parsedData); err != nil {
-		return nil, err
-	}
-
-	//网卡名称
-	var ifname_device string
-	for _, detail := range parsedData {
-		if detail.HardwareAddress == newMacAddr {
-			//获取网卡
-			ifname_device = detail.Name
-		}
-	}
-
 	//日志记录，gn为之前的网络 添加日志
 	notes := jsonutils.NewDict()
 	if gn != nil {
@@ -2404,7 +2384,7 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	if self.Hypervisor == api.HYPERVISOR_KVM && restartNetwork && (self.Status == api.VM_RUNNING || self.Status == api.VM_BLOCK_STREAM) {
 		taskData.Set("restart_network", jsonutils.JSONTrue)
 		taskData.Set("prev_ip", jsonutils.NewString(gn.IpAddr))
-		taskData.Set("ifname_device", jsonutils.NewString(ifname_device))
+		taskData.Set("prev_mac", jsonutils.NewString(newMacAddr))
 		taskData.Set("ip_mask", jsonutils.NewString(Ip_mask))
 		taskData.Set("gateway", jsonutils.NewString(newGateway))
 
@@ -2416,6 +2396,30 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	return nil, self.startSyncTask(ctx, userCred, true, "", taskData)
 }
 
+func (self *SGuest) PerformQgaStatus(ctx context.Context, userCred mcclient.TokenCredential) (jsonutils.JSONObject, error) {
+	return self.PerformQgaGuestInfoTask(ctx, userCred, nil, nil)
+}
+func (self *SGuest) PerformGetIfname(ctx context.Context, userCred mcclient.TokenCredential, mac string) (string, error) {
+	ifnameData, err := self.PerformQgaGetNetwork(ctx, userCred, nil, nil)
+	if err != nil {
+		return "", err
+	}
+	//获取网卡的名称
+	var parsedData []qga.IfnameDetail
+	if err := json.Unmarshal([]byte(ifnameData.String()), &parsedData); err != nil {
+		return "", err
+	}
+
+	//网卡名称
+	var ifname_device string
+	for _, detail := range parsedData {
+		if detail.HardwareAddress == mac {
+			//获取网卡
+			ifname_device = detail.Name
+		}
+	}
+	return ifname_device, nil
+}
 func (self *SGuest) PerformSetNetwork(ctx context.Context, userCred mcclient.TokenCredential, device string, ipMask string, gateway string) (jsonutils.JSONObject, error) {
 
 	inputQgaNet := &api.ServerQgaSetNetworkInput{
