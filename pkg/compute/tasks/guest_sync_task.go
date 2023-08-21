@@ -97,14 +97,17 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_QGA_NETWORK_INPUT, guest.QgaStatus, self.UserCred, true)
 		//If qga is available, set up the network with qga, otherwise use ansible
 		if guest.Hypervisor == api.HYPERVISOR_KVM && guest.Status == api.VM_RESTART_NETWORK && guest.QgaStatus == api.QGA_STATUS_AVAILABLE {
-			guest.UpdateQgaStatus(api.QGA_STATUS_EXCUTING)
+			err := guest.UpdateQgaStatus(api.QGA_STATUS_EXCUTING)
+			if err != nil {
+				logclient.AddActionLogWithStartable(self, guest, logclient.ACT_QGA_STATUS_UPDATE, err, self.UserCred, false)
+			}
 			//Get information about the network card
 			ifnameDevice, _ := guest.PerformGetIfname(ctx, self.UserCred, preMac)
 			if ifnameDevice == "" {
 				logclient.AddActionLogWithStartable(self, guest, logclient.ACT_QGA_NETWORK_INPUT, "找不到相应mac地址的网卡名称", self.UserCred, false)
 			}
 			//Setting up the network using qga
-			_, err := guest.PerformSetNetwork(ctx, self.UserCred, ifnameDevice, ipMask, gateway)
+			_, err = guest.PerformSetNetwork(ctx, self.UserCred, ifnameDevice, ipMask, gateway)
 			//If the first execution fails, execute it again
 			if err != nil {
 				logclient.AddActionLogWithStartable(self, guest, logclient.ACT_QGA_NETWORK_INPUT, err, self.UserCred, false)
