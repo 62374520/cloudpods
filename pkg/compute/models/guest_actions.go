@@ -939,6 +939,22 @@ func (self *SGuest) StartRestartNetworkTask(ctx context.Context, userCred mcclie
 	return nil
 }
 
+func (self *SGuest) StartQgaRestartNetworkTask(ctx context.Context, userCred mcclient.TokenCredential, parentTaskId string, device string, ipMask string, gateway string, prevIp string, inBlockStream bool) error {
+	data := jsonutils.NewDict()
+	data.Set("device", jsonutils.NewString(device))
+	data.Set("ipMask", jsonutils.NewString(ipMask))
+	data.Set("gateway", jsonutils.NewString(gateway))
+	data.Set("prevIp", jsonutils.NewString(prevIp))
+	data.Set("inBlockStream", jsonutils.NewBool(inBlockStream))
+	if task, err := taskman.TaskManager.NewTask(ctx, "GuestQgaRestartNetworkTask", self, userCred, data, parentTaskId, "", nil); err != nil {
+		log.Errorln(err)
+		return err
+	} else {
+		task.ScheduleRun(nil)
+	}
+	return nil
+}
+
 func (self *SGuest) startSyncTask(ctx context.Context, userCred mcclient.TokenCredential, firewallOnly bool, parentTaskId string, data *jsonutils.JSONDict) error {
 	if firewallOnly {
 		data.Add(jsonutils.JSONTrue, "fw_only")
@@ -2343,12 +2359,11 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 
 	//Get the detailed description of the NIC
 	networkJsonDesc := ngn[0].getJsonDesc()
-	networkJsonDescJSONObject := jsonutils.Marshal(networkJsonDesc)
-	newIpAddr, _ := networkJsonDescJSONObject.GetString("ip")
-	newMacAddr, _ := networkJsonDescJSONObject.GetString("mac")
-	newMaskLen, _ := networkJsonDescJSONObject.GetString("masklen")
-	newGateway, _ := networkJsonDescJSONObject.GetString("gateway")
-	Ip_mask := fmt.Sprintf("%s/%s", newIpAddr, newMaskLen)
+	newIpAddr := networkJsonDesc.Ip
+	newMacAddr := networkJsonDesc.Mac
+	newMaskLen := networkJsonDesc.Masklen
+	newGateway := networkJsonDesc.Gateway
+	ipMask := fmt.Sprintf("%s/%d", newIpAddr, newMaskLen)
 
 	notes := jsonutils.NewDict()
 	if gn != nil {
@@ -2366,7 +2381,7 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 		taskData.Set("restart_network", jsonutils.JSONTrue)
 		taskData.Set("prev_ip", jsonutils.NewString(gn.IpAddr))
 		taskData.Set("prev_mac", jsonutils.NewString(newMacAddr))
-		taskData.Set("ip_mask", jsonutils.NewString(Ip_mask))
+		taskData.Set("ip_mask", jsonutils.NewString(ipMask))
 		taskData.Set("gateway", jsonutils.NewString(newGateway))
 		if self.Status == api.VM_BLOCK_STREAM {
 			taskData.Set("in_block_stream", jsonutils.JSONTrue)
@@ -2391,32 +2406,14 @@ func (self *SGuest) PerformGetIfname(ctx context.Context, userCred mcclient.Toke
 	if err := json.Unmarshal([]byte(ifnameData.String()), &parsedData); err != nil {
 		return "", err
 	}
-
-	var ifname_device string
+	var ifnameDevice string
 	//Finding a network card by its mac address
 	for _, detail := range parsedData {
 		if detail.HardwareAddress == mac {
-			ifname_device = detail.Name
+			ifnameDevice = detail.Name
 		}
 	}
-	return ifname_device, nil
-}
-func (self *SGuest) PerformSetNetwork(ctx context.Context, userCred mcclient.TokenCredential, device string, ipMask string, gateway string) (jsonutils.JSONObject, error) {
-
-	inputQgaNet := &api.ServerQgaSetNetworkInput{
-		Device:  device,
-		Ipmask:  ipMask,
-		Gateway: gateway,
-	}
-
-	// if success, log network related information
-	notesNetwork := jsonutils.NewDict()
-	notesNetwork.Add(jsonutils.NewString(inputQgaNet.Device), "Device")
-	notesNetwork.Add(jsonutils.NewString(inputQgaNet.Ipmask), "Ipmask")
-	notesNetwork.Add(jsonutils.NewString(inputQgaNet.Gateway), "Gateway")
-	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_RESTART_NETWORK, notesNetwork, userCred, true)
-
-	return self.PerformQgaSetNetwork(ctx, userCred, nil, inputQgaNet)
+	return ifnameDevice, nil
 }
 
 func (self *SGuest) PerformDetachnetwork(ctx context.Context, userCred mcclient.TokenCredential, query jsonutils.JSONObject, input api.ServerDetachnetworkInput) (jsonutils.JSONObject, error) {
