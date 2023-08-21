@@ -2345,9 +2345,9 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 	networkJsonDesc := ngn[0].getJsonDesc()
 	newIpAddr := networkJsonDesc.Ip
 	newMacAddr := networkJsonDesc.Mac
-	newMaskLen := string(networkJsonDesc.Masklen)
+	newMaskLen := networkJsonDesc.Masklen
 	newGateway := networkJsonDesc.Gateway
-	ipMask := fmt.Sprintf("%s/%s", newIpAddr, newMaskLen)
+	ipMask := fmt.Sprintf("%s/%d", newIpAddr, newMaskLen)
 
 	notes := jsonutils.NewDict()
 	if gn != nil {
