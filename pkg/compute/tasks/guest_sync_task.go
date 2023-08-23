@@ -38,20 +38,16 @@ func init() {
 func (self *GuestSyncConfTask) OnInit(ctx context.Context, obj db.IStandaloneModel, data jsonutils.JSONObject) {
 	guest := obj.(*models.SGuest)
 	db.OpsLog.LogEvent(guest, db.ACT_SYNC_CONF, nil, self.UserCred)
-	host, _ := guest.GetHost()
-	if host == nil {
+	if host, _ := guest.GetHost(); host == nil {
 		self.SetStageFailed(ctx, jsonutils.NewString("No host for sync"))
 		return
 	} else {
-		self.SetStage("OnSyncComplete", nil)
-		err := guest.GetDriver().RequestSyncConfigOnHost(ctx, guest, host, self)
-		if err != nil {
+		if err := guest.GetDriver().RequestSyncConfigOnHost(ctx, guest, host, self); err != nil {
 			self.SetStageFailed(ctx, jsonutils.NewString(err.Error()))
 			log.Errorf("SyncConfTask faled %v", err)
 		}
-		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_QGA_NETWORK_INPUT, err, self.UserCred, false)
+		self.SetStage("OnSyncComplete", nil)
 	}
-	logclient.AddActionLogWithStartable(self, guest, logclient.ACT_NETWORK_ADD_VPC, host, self.UserCred, false)
 }
 
 func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStandaloneModel, data jsonutils.JSONObject) {
