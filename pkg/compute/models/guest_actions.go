@@ -2370,6 +2370,10 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 		if self.Status == api.VM_BLOCK_STREAM {
 			taskData.Set("in_block_stream", jsonutils.JSONTrue)
 		}
+		err := self.StartSyncTask(ctx, userCred, false, "")
+		if err != nil {
+			logclient.AddActionLogWithContext(ctx, self, logclient.ACT_QGA_STATUS_UPDATE, err, userCred, true)
+		}
 		self.SetStatus(userCred, api.VM_RESTART_NETWORK, "restart network")
 	}
 	return nil, self.startSyncTask(ctx, userCred, true, "", taskData)
