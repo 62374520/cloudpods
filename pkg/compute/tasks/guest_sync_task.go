@@ -97,7 +97,11 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_QGA_NETWORK_INPUT, guest.QgaStatus, self.UserCred, true)
 		//If qga is available, set up the network with qga, otherwise use ansible
 		if guest.Hypervisor == api.HYPERVISOR_KVM && guest.Status == api.VM_RESTART_NETWORK && guest.QgaStatus == api.QGA_STATUS_AVAILABLE {
-			err := guest.UpdateQgaStatus(api.QGA_STATUS_EXCUTING)
+			err := guest.StartSyncTask(ctx, self.UserCred, false, self.Id)
+			if err != nil {
+				logclient.AddActionLogWithContext(ctx, self, logclient.ACT_QGA_STATUS_UPDATE, err, self.UserCred, true)
+			}
+			err = guest.UpdateQgaStatus(api.QGA_STATUS_EXCUTING)
 			if err != nil {
 				logclient.AddActionLogWithStartable(self, guest, logclient.ACT_QGA_STATUS_UPDATE, err, self.UserCred, false)
 			}
