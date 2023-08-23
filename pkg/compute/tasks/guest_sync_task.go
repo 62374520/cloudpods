@@ -42,11 +42,11 @@ func (self *GuestSyncConfTask) OnInit(ctx context.Context, obj db.IStandaloneMod
 		self.SetStageFailed(ctx, jsonutils.NewString("No host for sync"))
 		return
 	} else {
+		self.SetStage("OnSyncComplete", nil)
 		if err := guest.GetDriver().RequestSyncConfigOnHost(ctx, guest, host, self); err != nil {
 			self.SetStageFailed(ctx, jsonutils.NewString(err.Error()))
 			log.Errorf("SyncConfTask faled %v", err)
 		}
-		self.SetStage("OnSyncComplete", nil)
 	}
 }
 
@@ -92,6 +92,11 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 		} else {
 			guest.UpdateQgaStatus(api.QGA_STATUS_AVAILABLE)
 		}
+
+		host, _ := guest.GetHost()
+		desc, err := guest.GetDriver().GetJsonDescAtHost(ctx, self.UserCred, guest, host, nil)
+		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_QGA_NETWORK_INPUT, desc, self.UserCred, false)
+
 		//Printing the QgaStatus after execution
 		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_QGA_NETWORK_INPUT, err, self.UserCred, true)
 		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_QGA_NETWORK_INPUT, guest.QgaStatus, self.UserCred, true)

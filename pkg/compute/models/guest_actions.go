@@ -2309,14 +2309,11 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 		}
 
 		err = self.detachNetworks(ctx, userCred, []SGuestnetwork{*gn}, reserve, false)
-		logclient.AddActionLogWithContext(ctx, self, logclient.ACT_DETACH_NETWORK, err, userCred, false)
 		if err != nil {
 			return nil, err
 		}
 		conf.Ifname = gn.Ifname
 		ngn, err := self.attach2NetworkDesc(ctx, userCred, host, conf, nil, nil)
-		logclient.AddActionLogWithContext(ctx, self, logclient.ACT_ATTACH_NETWORK, ngn, userCred, false)
-		logclient.AddActionLogWithContext(ctx, self, logclient.ACT_ATTACH_NETWORK, err, userCred, false)
 		if err != nil {
 			// recover detached guestnetwork
 			conf2 := gn.ToNetworkConfig()
@@ -2365,10 +2362,6 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 
 	taskData := jsonutils.NewDict()
 	if self.Hypervisor == api.HYPERVISOR_KVM && restartNetwork && (self.Status == api.VM_RUNNING || self.Status == api.VM_BLOCK_STREAM) {
-		err := self.StartSyncTask(ctx, userCred, false, "")
-		if err != nil {
-			logclient.AddActionLogWithContext(ctx, self, logclient.ACT_RESTART_NETWORK, err, userCred, false)
-		}
 		taskData.Set("restart_network", jsonutils.JSONTrue)
 		taskData.Set("prev_ip", jsonutils.NewString(gn.IpAddr))
 		taskData.Set("prev_mac", jsonutils.NewString(newMacAddr))
@@ -2420,6 +2413,10 @@ func (self *SGuest) PerformSetNetwork(ctx context.Context, userCred mcclient.Tok
 	notesNetwork.Add(jsonutils.NewString(inputQgaNet.Ipmask), "Ipmask")
 	notesNetwork.Add(jsonutils.NewString(inputQgaNet.Gateway), "Gateway")
 	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_RESTART_NETWORK, notesNetwork, userCred, true)
+	//err := self.StartSyncTask(ctx, userCred, false, "")
+	//if err != nil {
+	//	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_RESTART_NETWORK, err, userCred, false)
+	//}
 	return self.PerformQgaSetNetwork(ctx, userCred, nil, inputQgaNet)
 }
 
