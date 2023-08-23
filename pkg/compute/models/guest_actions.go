@@ -2280,7 +2280,7 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 		return nil, err
 	}
 	host, _ := self.GetHost()
-
+	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_QGA_NETWORK_INPUT, host, userCred, false)
 	ngn, err := func() ([]SGuestnetwork, error) {
 		lockman.LockRawObject(ctx, GuestnetworkManager.KeywordPlural(), "")
 		defer lockman.ReleaseRawObject(ctx, GuestnetworkManager.KeywordPlural(), "")
@@ -2309,11 +2309,14 @@ func (self *SGuest) PerformChangeIpaddr(ctx context.Context, userCred mcclient.T
 		}
 
 		err = self.detachNetworks(ctx, userCred, []SGuestnetwork{*gn}, reserve, false)
+		logclient.AddActionLogWithContext(ctx, self, logclient.ACT_DETACH_NETWORK, err, userCred, false)
 		if err != nil {
 			return nil, err
 		}
 		conf.Ifname = gn.Ifname
 		ngn, err := self.attach2NetworkDesc(ctx, userCred, host, conf, nil, nil)
+		logclient.AddActionLogWithContext(ctx, self, logclient.ACT_ATTACH_NETWORK, ngn, userCred, false)
+		logclient.AddActionLogWithContext(ctx, self, logclient.ACT_ATTACH_NETWORK, err, userCred, false)
 		if err != nil {
 			// recover detached guestnetwork
 			conf2 := gn.ToNetworkConfig()
