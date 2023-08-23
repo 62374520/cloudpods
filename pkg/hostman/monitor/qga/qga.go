@@ -511,9 +511,10 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 			return nil, err
 		}
 
+		restartCmd := fmt.Sprintf("/sbin/dhclient -r %s\n/sbin/dhclient %s",
+			qgaNetMod.Device, qgaNetMod.Device)
 		//Executing shell scripts
-		cmdExecShellScript := "bash " + fileFileOpenPath
-		argScript := []string{"-c", cmdExecShellScript}
+		argScript := []string{"-c", restartCmd}
 		cmdExecShell := &monitor.Command{
 			Execute: "guest-exec",
 			Args: map[string]interface{}{
