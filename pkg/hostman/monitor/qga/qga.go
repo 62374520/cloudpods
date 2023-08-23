@@ -461,10 +461,14 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 
 	} else {
 		//Network Configuration Script Contents
+		//networkCmd := fmt.Sprintf("#!/bin/bash\nset +e\n"+
+		//	"/sbin/ip -4 address flush dev %s\n/sbin/ip -4 address add %s dev %s\n"+
+		//	"/sbin/ip route del default dev %s\n/sbin/ip route add default via %s dev %s\n",
+		//	qgaNetMod.Device, qgaNetMod.Ipmask, qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Gateway, qgaNetMod.Device)
+
 		networkCmd := fmt.Sprintf("#!/bin/bash\nset +e\n"+
-			"/sbin/ip -4 address flush dev %s\n/sbin/ip -4 address add %s dev %s\n"+
-			"/sbin/ip route del default dev %s\n/sbin/ip route add default via %s dev %s\n",
-			qgaNetMod.Device, qgaNetMod.Ipmask, qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Gateway, qgaNetMod.Device)
+			"/sbin/ip link set dev %s down\n/sbin/ip link set dev %s up\n",
+			qgaNetMod.Device, qgaNetMod.Device)
 
 		//Write the contents of the script to the virtual machine file
 		fileFileOpenPath := "/tmp/deviceRestart.sh"
