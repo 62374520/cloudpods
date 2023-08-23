@@ -616,6 +616,7 @@ func (self *SKVMGuestDriver) RequestSyncConfigOnHost(ctx context.Context, guest 
 	if err != nil {
 		return errors.Wrapf(err, "GetJsonDescAtHost")
 	}
+	logclient.AddActionLogWithContext(ctx, guest, logclient.ACT_VM_CHANGE_FLAVOR, desc, task.GetUserCred(), false)
 	body := jsonutils.NewDict()
 	body.Add(desc, "desc")
 	if fw_only, _ := task.GetParams().Bool("fw_only"); fw_only {
