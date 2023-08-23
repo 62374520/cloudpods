@@ -928,12 +928,14 @@ func (self *SGuest) StartRestartNetworkTask(ctx context.Context, userCred mcclie
 	data := jsonutils.NewDict()
 	data.Set("ip", jsonutils.NewString(ip))
 	data.Set("in_block_stream", jsonutils.NewBool(inBlockStream))
+	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_CREATE, "No Disk Info Provided", userCred, false)
 	if task, err := taskman.TaskManager.NewTask(ctx, "GuestRestartNetworkTask", self, userCred, data, parentTaskId, "", nil); err != nil {
 		log.Errorln(err)
 		return err
 	} else {
 		task.ScheduleRun(nil)
 	}
+	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_CREATE, "No Disk Info 2", userCred, false)
 	return nil
 }
 

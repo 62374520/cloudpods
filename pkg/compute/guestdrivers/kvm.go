@@ -621,6 +621,7 @@ func (self *SKVMGuestDriver) RequestSyncConfigOnHost(ctx context.Context, guest 
 	if fw_only, _ := task.GetParams().Bool("fw_only"); fw_only {
 		body.Add(jsonutils.JSONTrue, "fw_only")
 	}
+	logclient.AddActionLogWithContext(ctx, guest, logclient.ACT_VM_CHANGE_FLAVOR, desc, task.GetUserCred(), false)
 	url := fmt.Sprintf("%s/servers/%s/sync", host.ManagerUri, guest.Id)
 	header := self.getTaskRequestHeader(task)
 	_, _, err = httputils.JSONRequest(httputils.GetDefaultClient(), ctx, "POST", url, header, body, false)

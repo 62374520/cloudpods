@@ -43,6 +43,7 @@ func (self *GuestSyncConfTask) OnInit(ctx context.Context, obj db.IStandaloneMod
 		return
 	} else {
 		self.SetStage("OnSyncComplete", nil)
+		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_ATTACH_NETWORK, self.Params, self.UserCred, false)
 		if err := guest.GetDriver().RequestSyncConfigOnHost(ctx, guest, host, self); err != nil {
 			self.SetStageFailed(ctx, jsonutils.NewString(err.Error()))
 			log.Errorf("SyncConfTask faled %v", err)
@@ -58,17 +59,20 @@ func (self *GuestSyncConfTask) OnSyncComplete(ctx context.Context, obj db.IStand
 			self.SetStageComplete(ctx, nil)
 			return
 		}
+		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_ATTACH_NETWORK, fwOnly, self.UserCred, false)
 		prevIp, err := self.Params.GetString("prev_ip")
 		if err != nil {
 			log.Errorf("unable to get prev_ip when restart_network is true when sync guest")
 			self.SetStageComplete(ctx, nil)
 			return
 		}
+		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_ATTACH_NETWORK, prevIp, self.UserCred, false)
 		if inBlockStream := jsonutils.QueryBoolean(self.Params, "in_block_stream", false); inBlockStream {
 			guest.StartRestartNetworkTask(ctx, self.UserCred, "", prevIp, true)
 		} else {
 			guest.StartRestartNetworkTask(ctx, self.UserCred, "", prevIp, false)
 		}
+		logclient.AddActionLogWithStartable(self, guest, logclient.ACT_ATTACH_NETWORK, self.getGuest(), self.UserCred, false)
 		self.SetStageComplete(ctx, guest.GetShortDesc(ctx))
 	} else if data.Contains("task") {
 		// XXX this is only applied to KVM, which will call task_complete twice
