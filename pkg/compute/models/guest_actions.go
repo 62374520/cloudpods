@@ -2398,6 +2398,11 @@ func (self *SGuest) PerformGetIfname(ctx context.Context, userCred mcclient.Toke
 			ifname_device = detail.Name
 		}
 	}
+	err = self.StartSyncTask(ctx, userCred, false, "")
+	if err != nil {
+		return "", err
+	}
+
 	return ifname_device, nil
 }
 func (self *SGuest) PerformSetNetwork(ctx context.Context, userCred mcclient.TokenCredential, device string, ipMask string, gateway string) (jsonutils.JSONObject, error) {
@@ -2414,11 +2419,6 @@ func (self *SGuest) PerformSetNetwork(ctx context.Context, userCred mcclient.Tok
 	notesNetwork.Add(jsonutils.NewString(inputQgaNet.Ipmask), "Ipmask")
 	notesNetwork.Add(jsonutils.NewString(inputQgaNet.Gateway), "Gateway")
 	logclient.AddActionLogWithContext(ctx, self, logclient.ACT_RESTART_NETWORK, notesNetwork, userCred, true)
-
-	err := self.StartSyncTask(ctx, userCred, false, "")
-	if err != nil {
-		return nil, err
-	}
 
 	return self.PerformQgaSetNetwork(ctx, userCred, nil, inputQgaNet)
 }

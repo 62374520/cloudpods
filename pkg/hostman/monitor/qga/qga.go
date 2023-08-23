@@ -511,15 +511,12 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 			return nil, err
 		}
 
-		restartCmd := fmt.Sprintf("/sbin/dhclient -r %s\n/sbin/dhclient %s",
-			qgaNetMod.Device, qgaNetMod.Device)
 		//Executing shell scripts
-		argScript := []string{"-c", restartCmd}
 		cmdExecShell := &monitor.Command{
 			Execute: "guest-exec",
 			Args: map[string]interface{}{
-				"path":           "/bin/bash",
-				"arg":            argScript,
+				"path":           fileFileOpenPath,
+				"arg":            []string{},
 				"env":            []string{},
 				"input-data":     "",
 				"capture-output": true,
@@ -530,23 +527,6 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 			return nil, err
 		}
 		return *resExec, nil
-
-		////Executing shell scripts
-		//cmdExecShell := &monitor.Command{
-		//	Execute: "guest-exec",
-		//	Args: map[string]interface{}{
-		//		"path":           fileFileOpenPath,
-		//		"arg":            []string{},
-		//		"env":            []string{},
-		//		"input-data":     "",
-		//		"capture-output": true,
-		//	},
-		//}
-		//resExec, err := qga.execCmd(cmdExecShell, true, -1)
-		//if err != nil {
-		//	return nil, err
-		//}
-		//return *resExec, nil
 	}
 
 }
