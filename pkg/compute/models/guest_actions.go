@@ -2405,7 +2405,10 @@ func (self *SGuest) PerformGetIfname(ctx context.Context, userCred mcclient.Toke
 	return ifname_device, nil
 }
 func (self *SGuest) PerformSetNetwork(ctx context.Context, userCred mcclient.TokenCredential, device string, ipMask string, gateway string) (jsonutils.JSONObject, error) {
-
+	err := self.StartSyncTask(ctx, userCred, false, self.Id)
+	if err != nil {
+		logclient.AddActionLogWithContext(ctx, self, logclient.ACT_QGA_STATUS_UPDATE, err, userCred, false)
+	}
 	inputQgaNet := &api.ServerQgaSetNetworkInput{
 		Device:  device,
 		Ipmask:  ipMask,
