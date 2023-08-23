@@ -466,13 +466,13 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 		//	"/sbin/ip route del default dev %s\n/sbin/ip route add default via %s dev %s\n",
 		//	qgaNetMod.Device, qgaNetMod.Ipmask, qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Gateway, qgaNetMod.Device)
 
-		//networkCmd := fmt.Sprintf("#!/bin/bash\n"+
-		//	"/sbin/ip link set dev %s down\n/sbin/dhclient -r %s\n/sbin/dhclient %s\n/sbin/ip link set dev %s up\n",
-		//	qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Device)
-
 		networkCmd := fmt.Sprintf("#!/bin/bash\n"+
-			"/sbin/ip link set dev %s down\n/sbin/dhclient -r %s\nwait\n/sbin/dhclient %s\nwait\n",
-			qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Device)
+			"/sbin/ip link set dev %s down\n/sbin/dhclient -r %s\n/sbin/dhclient %s\n/sbin/ip link set dev %s up\n",
+			qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Device)
+
+		//networkCmd := fmt.Sprintf("#!/bin/bash\n"+
+		//	"/sbin/ip link set dev %s down\n/sbin/dhclient -r %s\nwait\n/sbin/dhclient %s\nwait\n",
+		//	qgaNetMod.Device, qgaNetMod.Device, qgaNetMod.Device)
 
 		//Write the contents of the script to the virtual machine file
 		fileFileOpenPath := "/tmp/deviceRestart.sh"
@@ -512,11 +512,13 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 		}
 
 		//Executing shell scripts
+		cmdExecShellScript := "bash " + fileFileOpenPath
+		argScript := []string{"-c", cmdExecShellScript}
 		cmdExecShell := &monitor.Command{
 			Execute: "guest-exec",
 			Args: map[string]interface{}{
-				"path":           fileFileOpenPath,
-				"arg":            []string{},
+				"path":           "/bin/bash",
+				"arg":            argScript,
 				"env":            []string{},
 				"input-data":     "",
 				"capture-output": true,
@@ -527,6 +529,23 @@ func (qga *QemuGuestAgent) QgaSetNetwork(qgaNetMod *monitor.NetworkModify) ([]by
 			return nil, err
 		}
 		return *resExec, nil
+
+		////Executing shell scripts
+		//cmdExecShell := &monitor.Command{
+		//	Execute: "guest-exec",
+		//	Args: map[string]interface{}{
+		//		"path":           fileFileOpenPath,
+		//		"arg":            []string{},
+		//		"env":            []string{},
+		//		"input-data":     "",
+		//		"capture-output": true,
+		//	},
+		//}
+		//resExec, err := qga.execCmd(cmdExecShell, true, -1)
+		//if err != nil {
+		//	return nil, err
+		//}
+		//return *resExec, nil
 	}
 
 }
